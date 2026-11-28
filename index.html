@@ -1,0 +1,1285 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- The page is written in Turkish; `data-i18n="key"` (the element's contents) and
+         `data-i18n-attr="attribute:key"` mark what src/i18n/ puts into the other languages -->
+    <title data-i18n="meta.title">Menkur Tarım · Ödemiş'ten Dünya'ya</title>
+    <meta
+      name="description"
+      data-i18n-attr="content:meta.description"
+      content="Bozdağlar'ın yamaçlarından dünyaya: Menkur Tarım kestanesinin uzaydan başlayan hikâyesi."
+    />
+    <meta name="theme-color" content="#07080a" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <!-- The page's two typefaces, Cormorant Garamond and Manrope, from the site itself
+         (public/fonts/, and LICENSE.txt there): the files Google Fonts hands out for them,
+         declared as Google declares them, word for word. Google hands out two makes of each
+         file, by the reader's system: to Windows and Linux, files with a small program for
+         how the rasteriser fills thin strokes (`prep`); to phones and Macs, the same letters
+         without it. Each system draws the other make a little differently (on Android
+         FreeType hints a file only when it has no program at all; Windows fills thin strokes
+         by it), so each is given the one it always had, public/fonts/hinted/ or public/fonts/.
+         Declared here, before anything is drawn, since a stylesheet can't ask which system
+         it is on. -->
+    <script>
+      (() => {
+        const dir = /Windows|X11/.test(navigator.userAgent) ? 'fonts/hinted/' : 'fonts/';
+        // A file holds one script, and `unicode-range` says which characters are in it, so a
+        // page fetches only the files whose letters it shows: a Turkish page the Latin and the
+        // extended Latin ones (ğ, ş and İ are in the second), and Manrope's Cyrillic one for
+        // "Русский" in the list of languages; the Russian page the Cyrillic ones too. In the
+        // order Google has them: a character two ranges share (ı) is taken from the later one.
+        const scripts = [
+          ['cyrillic', 'U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116'],
+          [
+            'latin-ext',
+            'U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF',
+          ],
+          [
+            'latin',
+            'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD',
+          ],
+        ];
+        // (the upright faces are variable in weight: one file for every weight of theirs)
+        const faces = [
+          ['Cormorant Garamond', 'italic', 500, 'cormorant-garamond-italic'],
+          ['Cormorant Garamond', 'normal', 500, 'cormorant-garamond'],
+          ['Cormorant Garamond', 'normal', 600, 'cormorant-garamond'],
+          ['Manrope', 'normal', 400, 'manrope'],
+          ['Manrope', 'normal', 500, 'manrope'],
+          ['Manrope', 'normal', 600, 'manrope'],
+        ];
+        let css = '';
+        for (const [family, style, weight, file] of faces) {
+          for (const [script, range] of scripts) {
+            css += `@font-face { font-family: '${family}'; font-style: ${style}; font-weight: ${weight}; font-display: swap; src: url(${dir}${file}-${script}.woff2) format('woff2'); unicode-range: ${range}; }\n`;
+          }
+        }
+        document.head.append(Object.assign(document.createElement('style'), { textContent: css }));
+      })();
+    </script>
+    <script type="module" crossorigin src="./assets/index-BuJ5ICfu.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CW2W0P14.css">
+  </head>
+  <body>
+    <canvas id="scene" aria-hidden="true"></canvas>
+
+    <div id="loader" role="status" aria-live="polite">
+      <div class="loader__mark" data-emblem aria-hidden="true"></div>
+      <div class="loader__brand">MENKUR <span>TARIM</span></div>
+      <div class="loader__bar"><i></i></div>
+      <div class="loader__text" data-i18n="loader.text">Hikâye hazırlanıyor</div>
+    </div>
+
+    <header class="topbar">
+      <a class="brand" href="#" data-jump="0" aria-label="Menkur Tarım">
+        <span class="brand__mark" data-emblem aria-hidden="true"></span>
+        <span class="brand__name" aria-hidden="true">MENKUR<small>TARIM</small></span>
+      </a>
+      <nav class="topnav" aria-label="Menü" data-i18n-attr="aria-label:nav.menu">
+        <span class="topnav__tag" data-i18n="nav.tag">Kestane · Kiraz</span>
+        <button class="topnav__toggle" type="button" aria-expanded="false" aria-controls="topnav-links">
+          <span data-i18n="nav.menu">Menü</span><i aria-hidden="true"></i>
+        </button>
+        <div class="topnav__links" id="topnav-links">
+          <a href="#hakkimizda" data-panel="hakkimizda" data-i18n="nav.about">Hakkımızda</a>
+          <a href="#urunler" data-panel="urunler" data-i18n="nav.products">Ürünler</a>
+          <a href="#gorseller" data-panel="gorseller" data-i18n="nav.gallery">Görseller</a>
+          <a href="#blog" data-panel="blog" data-i18n="nav.blog">Blog</a>
+          <a href="#iletisim-bilgi" data-panel="iletisim-bilgi" data-i18n="nav.contact">İletişim</a>
+        </div>
+      </nav>
+      <!-- the language: a button and its list, made by src/i18n/switcher.js -->
+      <div class="lang" data-lang-switch></div>
+    </header>
+
+    <main id="story" aria-label="Kestanenin hikâyesi" data-i18n-attr="aria-label:story.label">
+      <!-- the title starts to fade with the first scroll, as the camera sets off -->
+      <section class="beat beat--hero" data-in="0" data-out="0" data-fade="0.045">
+        <p class="eyebrow" data-i18n="hero.eyebrow">Menkur Tarım · 30 yıllık tecrübe</p>
+        <h1 data-i18n="hero.title">Ödemiş'ten <em>Dünya'ya</em></h1>
+        <p class="lead" data-i18n="hero.lead">Bir kestanenin, Bozdağlar'ın yamaçlarından sofranıza uzanan yolculuğu.</p>
+      </section>
+
+      <section class="beat beat--right" data-in="0.12" data-out="0.235">
+        <p class="eyebrow" data-i18n="aegean.eyebrow">Ege · Türkiye</p>
+        <h2 data-i18n="aegean.title">İzmir ile Aydın arasında</h2>
+        <p data-i18n="aegean.text">
+          Küçük Menderes ovasına bakan Bozdağlar'ın serin yamaçları, Türkiye'nin en önemli kestane
+          bölgelerinden biridir.
+        </p>
+      </section>
+
+      <section class="beat beat--center beat--ink beat--quote" data-in="0.3" data-out="0.31">
+        <p>
+          <span class="quote__line" data-i18n="quote.line1">Dağların serin havası ve Ege'nin güneşi.</span>
+          <span class="quote__line" data-i18n="quote.line2">Kestane ağacı ikisini de sever.</span>
+        </p>
+      </section>
+
+      <section class="beat beat--left" data-in="0.338" data-out="0.38">
+        <p class="eyebrow" data-i18n="mountains.eyebrow">Bozdağlar</p>
+        <h2 data-i18n="mountains.title">Kestanenin yurdu</h2>
+        <p data-i18n="mountains.text">
+          Kestanelerimiz Ege'nin en verimli topraklarında, Ödemiş, Bozdağ ve Beydağ yaylalarında nesilden
+          nesile bakılan ağaçlarda yetişir.
+        </p>
+      </section>
+
+      <section class="beat beat--right" data-in="0.408" data-out="0.45">
+        <p class="eyebrow" data-i18n="tree.eyebrow">Ağaç</p>
+        <h2 data-i18n="tree.title">Binlercesinden biri</h2>
+        <p data-i18n="tree.text">Her ağaç, dallarında yüzlerce kozayı taşıyan ayrı bir hikâyedir.</p>
+      </section>
+
+      <section class="beat beat--left" data-in="0.59" data-out="0.645">
+        <p class="eyebrow" data-i18n="burr.eyebrow">Koza</p>
+        <h2 data-i18n="burr.title">Dikenler bir kalkan</h2>
+        <p data-i18n="burr.text">
+          Kestane, olgunlaşana dek bu dikenli kozanın içinde korunur. Yazın yemyeşil, sonbaharda
+          altın sarısı.
+        </p>
+      </section>
+
+      <section class="beat beat--caption" data-in="0.657" data-out="0.684">
+        <p data-i18n="october.caption">Ve bir ekim sabahı…</p>
+      </section>
+
+      <section class="beat beat--left" data-in="0.705" data-out="0.758">
+        <p class="eyebrow" data-i18n="harvest.eyebrow">Hasat</p>
+        <h2 data-i18n="harvest.title">Hasadın iki yolu</h2>
+        <p data-i18n="harvest.text">
+          Olgunlaşan kestanelerin bir kısmı kozasından ayrılıp toprağa düşer. Bir kısmıysa dikenli kozasıyla
+          birlikte toplanır.
+        </p>
+      </section>
+
+      <section class="beat beat--right" data-in="0.79" data-out="0.826">
+        <p class="eyebrow" data-i18n="opening.eyebrow">Açılış</p>
+        <h2 data-i18n="opening.title">Ve koza yarılır</h2>
+        <p data-i18n="opening.text">Dikenlerin ardında parlak, kahverengi bir hazine.</p>
+      </section>
+
+      <!-- the two ways of the harvest (src/scenes/harvest.js) -->
+      <section class="beat beat--left" data-in="0.864" data-out="0.93">
+        <p class="eyebrow" data-i18n="glean.eyebrow">Akıntı kestane</p>
+        <h2 data-i18n="glean.title">Kozasından ayrılan kestaneler toplanır</h2>
+        <p data-i18n="glean.text">
+          Olgunlaşıp kozasından ayrılarak kendiliğinden yere düşen kestaneler yerden toplanır. Yörede bu hasada
+          akıntı kestane denir.
+        </p>
+      </section>
+
+      <section class="beat beat--caption" data-in="0.944" data-out="0.967">
+        <p data-i18n="wait.caption">Bazı kestanelerin yolculuğunda ise beklemek vardır.</p>
+      </section>
+
+      <section class="beat beat--right" data-in="0.982" data-out="1.034">
+        <p class="eyebrow" data-i18n="pit.eyebrow">Kuyu kestanesi</p>
+        <h2 data-i18n="pit.title">Eğrelti otlarının altında</h2>
+        <p data-i18n="pit.text">
+          Dikenli kozalarıyla toplanan kestaneler, hazırlanan alanda bir araya getirilir. Üzerleri eğrelti
+          otlarıyla örtülür; bekleme süreci başlar.
+        </p>
+      </section>
+
+      <section class="beat beat--left" data-in="1.05" data-out="1.099">
+        <h2 data-i18n="weeks.title">Haftalar geçer…</h2>
+        <p data-i18n="weeks.text">
+          Kestaneler kozalarının içinde dinlenir. Bu süre, uygulamaya ve koşullara göre birkaç haftadan birkaç
+          aya uzanabilir.
+        </p>
+      </section>
+
+      <section class="beat beat--right" data-in="1.142" data-out="1.198">
+        <h2 data-i18n="hull.title">Dikenlerin ardından</h2>
+        <p data-i18n="hull.text">
+          Bekleme süresinin ardından kozalar makineden geçirilir. Kestaneler dikenli dış örtülerinden ayrılarak
+          işleme yolculuğuna devam eder.
+        </p>
+      </section>
+
+      <section class="beat beat--caption" data-in="1.214" data-out="1.254">
+        <p data-i18n="meet.caption">Hasadın ardından kestaneler seçme, boylama ve paketleme yolculuğuna devam eder.</p>
+      </section>
+
+      <section class="beat beat--caption beat--big" data-in="1.28" data-out="1.326">
+        <p data-i18n="nut.caption">Geriye yalnızca <em>kestane</em> kalır.</p>
+      </section>
+
+      <section class="beat beat--left" data-in="1.352" data-out="1.42">
+        <p class="eyebrow">Menkur Tarım</p>
+        <h2 data-i18n="common.fromBranch">Dalından ambalaja</h2>
+        <p data-i18n="studio.text">
+          1996'dan bu yana Ege'nin bereketli topraklarında yetişen kestaneleri, iki soğuk hava deposu ve tam
+          otomatik paketleme hattıyla donatılmış tesisimizde işliyoruz.
+        </p>
+      </section>
+
+      <section class="beat beat--left" data-in="1.444" data-out="1.48">
+        <p class="eyebrow" data-i18n="common.packaging">Ambalaj</p>
+        <h2 data-i18n="packing.title">Özenle seçilir, özenle paketlenir</h2>
+        <p data-i18n="packing.text">
+          Kestane kilogramdaki adede göre boylanır, silinir ve seçilir; fileden big bag'e, 1 kg'dan 1.000 kg'a
+          kadar ambalajlanır.
+        </p>
+      </section>
+
+      <section class="beat beat--left" data-in="1.534" data-out="1.564">
+        <p class="eyebrow" data-i18n="loading.eyebrow">Yükleme</p>
+        <h2 data-i18n="loading.title">Yola hazır</h2>
+        <p data-i18n="loading.text">Fileler ve çuvallar paletlenir, soğuk hava deposundan soğutmalı kamyonlara yüklenir.</p>
+      </section>
+
+      <section class="beat beat--left" data-in="1.612" data-out="1.656">
+        <p class="eyebrow" data-i18n="road.eyebrow">Yol</p>
+        <h2 data-i18n="road.title">Ödemiş'ten yola çıkar</h2>
+        <p data-i18n="road.text">Üretimimizin %80'i, Bozdağlar'ın eteğinden yola çıkan kamyonlarla tüm dünyaya ihraç edilir.</p>
+      </section>
+
+      <section class="beat beat--finale" data-in="1.768" data-out="1.858" id="iletisim">
+        <p class="eyebrow" data-i18n="finale.eyebrow">Menkur Tarım · Ödemiş / İzmir</p>
+        <h2 data-i18n="finale.title">Dalından Ambalaja,<br /><em>Ödemiş'ten Dünya'ya</em></h2>
+        <p data-i18n="finale.text">
+          1996'dan bu yana Ege'nin bereketli topraklarında yetişen kestaneleri özenle seçiyor,
+          paketliyor ve dünyanın dört bir yanındaki sofralara ulaştırıyoruz.
+        </p>
+        <ul class="stats">
+          <li><strong>1996</strong><span data-i18n="stats.founded">Kuruluş</span></li>
+          <li><strong data-i18n="fig.30y">30 yıl</strong><span data-i18n="common.experience">Tecrübe</span></li>
+          <li><strong data-i18n="fig.80pct">%80</strong><span data-i18n="common.exportShare">İhracat oranı</span></li>
+          <li><strong data-i18n="fig.3000t">3.000 t</strong><span data-i18n="stats.output">Yıllık üretim</span></li>
+        </ul>
+        <div class="cta">
+          <a class="btn btn--solid" href="mailto:info@menkurtarim.com.tr" data-i18n="finale.cta">İletişime geçin</a>
+          <a class="btn" href="tel:+902325455628">+90 232 545 56 28</a>
+        </div>
+        <p class="address">
+          Zafer Mah., Birgi Yolu Üzeri No:3/2 · Ödemiş / İzmir<br />
+          <a href="mailto:info@menkurtarim.com.tr">info@menkurtarim.com.tr</a> ·
+          <a href="mailto:export@menkurtarim.com.tr">export@menkurtarim.com.tr</a> ·
+          <a href="#iletisim-bilgi" data-panel="iletisim-bilgi" data-i18n="finale.allContact">Tüm iletişim bilgileri</a> ·
+          <span class="social">
+            <a href="https://www.instagram.com/menkurtarim/" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2" /><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2" /><circle cx="17.4" cy="6.6" r="1.3" fill="currentColor" /></svg></a>
+            <a href="https://www.facebook.com/menkur.agricultural" target="_blank" rel="noopener" aria-label="Facebook" title="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.6 21v-7.6h2.6l.4-3h-3V8.5c0-.9.3-1.5 1.6-1.5h1.6V4.3c-.3 0-1.2-.1-2.4-.1-2.3 0-3.9 1.4-3.9 4v2.2H7.9v3h2.6V21h3.1Z" /></svg></a>
+          </span>
+        </p>
+      </section>
+
+      <!-- the story ends back on the opening title; this copy fades in as it does -->
+      <section class="beat beat--hero" data-in="1.906" data-out="99" aria-hidden="true">
+        <p class="eyebrow" data-i18n="hero.eyebrow">Menkur Tarım · 30 yıllık tecrübe</p>
+        <h1 data-i18n="hero.title">Ödemiş'ten <em>Dünya'ya</em></h1>
+        <p class="lead" data-i18n="hero.lead">Bir kestanenin, Bozdağlar'ın yamaçlarından sofranıza uzanan yolculuğu.</p>
+      </section>
+    </main>
+
+    <!-- Hakkımızda · Ürünler · İletişim: opened from the top menu, over the story (src/panels.js) -->
+    <div class="panel" id="hakkimizda" role="dialog" aria-modal="true" aria-labelledby="hakkimizda-title" hidden>
+      <div class="panel__scrim" data-close></div>
+      <article class="panel__sheet">
+        <button class="panel__close" type="button" data-close aria-label="Kapat" data-i18n-attr="aria-label:ui.close"><span></span></button>
+        <div class="panel__mark" data-emblem aria-hidden="true"></div>
+        <p class="eyebrow" data-i18n="nav.about">Hakkımızda</p>
+        <h2 id="hakkimizda-title" data-i18n="about.title">30 yıllık tecrübeyle, 1996'dan bu yana</h2>
+        <p class="panel__lead" data-i18n="about.lead">
+          1996 yılında Ödemiş'te kurulan Menkur Tarım, 2002'de taşındığı modern tesisinde kurumsal yönetim
+          anlayışı ve çağdaş teknolojinin olanaklarıyla üretimini sürdürüyor.
+        </p>
+        <p data-i18n="about.p1">
+          1.000 metrekarelik alana kurulu tesisimiz; 110 ila 200 metrekare arasında değişen iki soğuk hava
+          deposu ve tam otomatik paketleme hattıyla donatılmıştır. Sezonluk ve tam zamanlı çalışan deneyimli
+          ekibimizle her ürünü titizlikle seçiyor, işliyor ve güvenle paketliyoruz. Üretimimizin yaklaşık
+          %80'ini yurt dışına ihraç ederek Ege'nin bereketini dünya sofralarına taşıyoruz.
+        </p>
+        <p data-i18n="about.p2">
+          Müşteri memnuniyetini, kaliteli üretimi ve zamanında teslimatı temel ilke edinen Menkur Tarım, hem
+          yurt içinde hem de uluslararası pazarda güvenilir bir marka olma vizyonuyla çalışmalarını sürdürüyor.
+        </p>
+
+        <dl class="facts">
+          <div><dt data-i18n="fig.30y">30 yıl</dt><dd data-i18n="common.experience">Tecrübe</dd></div>
+          <div><dt>1996</dt><dd data-i18n="about.fact.founded">Ödemiş'te kuruluş</dd></div>
+          <div><dt>2002</dt><dd data-i18n="about.fact.moved">Modern tesise taşınma</dd></div>
+          <div><dt data-i18n="fig.1000m2">1.000 m²</dt><dd data-i18n="about.fact.area">Tesis alanı</dd></div>
+          <div><dt>2</dt><dd data-i18n="about.fact.cold">Soğuk hava deposu (110–200 m²)</dd></div>
+          <div><dt data-i18n="fig.80pct">%80</dt><dd data-i18n="common.exportShare">İhracat oranı</dd></div>
+          <div><dt data-i18n="fig.3000t">3.000 t</dt><dd data-i18n="about.fact.capacity">Yıllık üretim kapasitesi</dd></div>
+          <div><dt data-i18n="fig.95pct">%95</dt><dd data-i18n="about.fact.satisfaction">Müşteri memnuniyeti</dd></div>
+          <div><dt data-i18n="about.fact.auto">Tam otomatik</dt><dd data-i18n="about.fact.line">Paketleme hattı</dd></div>
+        </dl>
+
+        <h3 data-i18n="common.fromBranch">Dalından ambalaja</h3>
+        <ol class="steps">
+          <li>
+            <strong data-i18n="about.step1.title">Seçme ve ayıklama</strong>
+            <span data-i18n="about.step1.text">En kaliteli kestane ve kirazlar modern hatlarda seçilir. Her ürün kalite kontrol aşamalarından
+              geçerek özenle hazırlanır.</span>
+          </li>
+          <li>
+            <strong data-i18n="about.step2.title">İşleme ve paketleme</strong>
+            <span data-i18n="about.step2.text">Ürünler tazeliğini koruyan hijyenik ortamlarda işlenir. Tam otomatik paketleme sistemimizle
+              doğallıkları güvenle korunur.</span>
+          </li>
+          <li>
+            <strong data-i18n="common.coldStorage">Soğuk hava depolama</strong>
+            <span data-i18n="about.step3.text">Ürünler sevkiyata kadar soğuk hava depolarımızda saklanır, doğal tazeliklerini korur.</span>
+          </li>
+          <li>
+            <strong data-i18n="about.step4.title">Sevkiyat ve ihracat</strong>
+            <span data-i18n="about.step4.text">Ege'nin bereketini dünyanın dört bir yanına ulaştırıyoruz. Zamanında teslimat ve güvenli
+              lojistik, Menkur Tarım güvencesidir.</span>
+          </li>
+        </ol>
+
+        <h3 data-i18n="about.services.title">Hizmetlerimiz</h3>
+        <ul class="cards">
+          <li><strong data-i18n="about.svc1.title">Kestane paketleme</strong><span data-i18n="about.svc1.text">Kestaneleri en taze hâlleriyle paketliyor, dünya çapında güvenle teslim ediyoruz.</span></li>
+          <li><strong data-i18n="about.svc2.title">Kiraz ihracatı</strong><span data-i18n="common.cherryExport">En kaliteli kirazları özenle seçip uluslararası pazarlara ihraç ediyoruz.</span></li>
+          <li><strong data-i18n="common.coldStorage">Soğuk hava depolama</strong><span data-i18n="about.svc3.text">Ürünlerin tazeliğini korumak için modern soğuk hava depolarımızda saklıyoruz.</span></li>
+          <li><strong data-i18n="about.svc4.title">Otomatik paketleme</strong><span data-i18n="about.svc4.text">Tam otomatik makinelerimizle hızlı ve güvenilir paketleme hizmeti sunuyoruz.</span></li>
+        </ul>
+        <p data-i18n="about.services.more">Bunların yanında üretim ve işleme, paketleme ve sevkiyat ile ihracat desteği hizmetleri sunuyoruz.</p>
+
+        <h3 data-i18n="about.quality.title">Kalite ve sürdürülebilirlik</h3>
+        <p data-i18n="about.quality.p1">
+          Ürünlerimiz modern tesislerde, hijyen ve kalite standartlarına uygun şekilde işlenir; doğallığını koruyan
+          üretim anlayışıyla her adımda mükemmeli hedefliyoruz.
+        </p>
+        <p data-i18n="about.quality.p2">
+          Doğayı koruyarak üretmek, gelecek nesillere bırakacağımız en büyük mirastır. Enerji verimliliği, atık
+          yönetimi ve çevre dostu üretimle sürdürülebilir tarımı destekliyoruz.
+        </p>
+      </article>
+    </div>
+
+    <div class="panel" id="urunler" role="dialog" aria-modal="true" aria-labelledby="urunler-title" hidden>
+      <div class="panel__scrim" data-close></div>
+      <article class="panel__sheet">
+        <button class="panel__close" type="button" data-close aria-label="Kapat" data-i18n-attr="aria-label:ui.close"><span></span></button>
+        <div class="panel__mark" data-emblem aria-hidden="true"></div>
+        <p class="eyebrow" data-i18n="products.eyebrow">Ürünlerimiz</p>
+        <h2 id="urunler-title" data-i18n="common.chestnutCherry">Kestane ve kiraz</h2>
+
+        <h3 data-i18n="common.chestnut">Kestane</h3>
+        <p class="panel__lead" data-i18n="products.chestnut.lead">
+          Sonbaharda piyasaya çıkan kestane; közlenerek, haşlanarak, şekerlemesi, unu ve pastalarıyla, bazı
+          yemeklerde de garnitür olarak sevilerek tüketilir.
+        </p>
+        <p data-i18n="products.chestnut.text">
+          Ülkemizde kaliteli taze kestane Ödemiş, Nazilli, Kiraz, Bozdağ ve Beydağ bölgelerinde yetişir.
+          Kestanelerimiz Ege'nin en verimli topraklarında, özellikle Ödemiş, Beydağ ve Bozdağ yaylalarında
+          yetişmektedir. Çeşitli coğrafi koşullar altında ihracata en uygun olanı marron (şeker) cinsidir.
+          İyi, nitelikli bir kestane yaklaşık 2,5 cm genişliğinde ve 15–20 g ağırlığındadır; kuzu kestanesi
+          denilen türler bu ölçülerden küçüktür.
+        </p>
+
+        <h4 id="boylar" data-i18n="sizes.title">Boylar</h4>
+        <p data-i18n="sizes.text">
+          Kestane, kalibre makinelerinde kilogramdaki adede göre boylara ayrılır; ardından silinir ve
+          seleksiyondan geçirilerek işlenir.
+        </p>
+        <!-- the chestnut at the chosen size, in 3D and in AR: src/sizes/ (which writes its own
+             words, in the reader's language, into the view, the button and the readout) -->
+        <div class="sizer" data-sizer>
+          <div class="sizer__stage">
+            <canvas class="sizer__canvas" role="img" aria-label="Seçilen boydaki kestanenin üç boyutlu görünümü"></canvas>
+            <p class="sizer__status" data-sizer-status hidden></p>
+            <button class="sizer__ar" type="button" data-sizer-ar hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 2.8 20 7.4v9.2L12 21.2 4 16.6V7.4ZM4 7.4l8 4.6 8-4.6M12 12v9.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+              </svg>
+              <span>AR'da görüntüle</span>
+            </button>
+          </div>
+          <div class="sizer__caption">
+            <p class="sizer__readout" data-sizer-readout aria-live="polite">40–45 adet/kg · tane başı 22–25 g · genişlik ≈ 42 mm</p>
+            <p class="sizer__hint" data-sizer-hint aria-live="polite" hidden></p>
+          </div>
+          <fieldset class="sizes">
+            <legend class="visually-hidden" data-i18n="sizes.legend">Kilogramdaki adede göre boylar</legend>
+            <label><input type="radio" name="boy" value="40-45" checked /><strong>40–45</strong><span data-i18n="sizes.largest">en iri</span></label>
+            <label><input type="radio" name="boy" value="50-55" /><strong>50–55</strong></label>
+            <label><input type="radio" name="boy" value="60-65" /><strong>60–65</strong></label>
+            <label><input type="radio" name="boy" value="70-75" /><strong>70–75</strong></label>
+            <label><input type="radio" name="boy" value="80-85" /><strong>80–85</strong></label>
+            <label><input type="radio" name="boy" value="90-95" /><strong>90–95</strong></label>
+            <label><input type="radio" name="boy" value="100" /><strong>100+</strong></label>
+          </fieldset>
+          <!-- our packs at their true size, in the same view and in AR (src/sizes/table.js, PACKS) -->
+          <fieldset class="sizes sizes--packs">
+            <legend data-i18n="sizes.packs">Ambalajlar, gerçek boyutlarında</legend>
+            <label><input type="radio" name="boy" value="1kg" /><strong>1 <span data-i18n="sizer.kg">kg</span></strong><span data-i18n="sizes.pack.net">file</span></label>
+            <label><input type="radio" name="boy" value="5kg" /><strong>5 <span data-i18n="sizer.kg">kg</span></strong><span data-i18n="sizes.pack.net">file</span></label>
+            <label><input type="radio" name="boy" value="25kg" /><strong>25 <span data-i18n="sizer.kg">kg</span></strong><span data-i18n="sizes.pack.sack">file çuval</span></label>
+            <label><input type="radio" name="boy" value="1000kg" /><strong>1000 <span data-i18n="sizer.kg">kg</span></strong><span data-i18n="sizes.pack.bigBag">big bag</span></label>
+          </fieldset>
+        </div>
+
+        <h4 data-i18n="common.packaging">Ambalaj</h4>
+        <p data-i18n="products.packaging.text">
+          Big bag (çuval), jüt çuval ve filede işlenen kestane, isteğe göre 1 kg'dan 1.000 kg'a kadar
+          ambalajlanıp ihraç edilir.
+        </p>
+
+        <h4 id="besin-degerleri" data-i18n="nutrition.title">Besin değerleri <small>100 g kestane</small></h4>
+        <table class="nutrition">
+          <tbody>
+            <tr><th data-i18n="nut.energy">Enerji</th><td data-i18n="nut.v.energy">194 kcal</td><th data-i18n="nut.phosphorus">Fosfor</th><td data-i18n="nut.v.phosphorus">88 mg</td></tr>
+            <tr><th data-i18n="nut.carbs">Karbonhidrat</th><td data-i18n="nut.v.carbs">42,1 g</td><th data-i18n="nut.calcium">Kalsiyum</th><td data-i18n="nut.v.calcium">27 mg</td></tr>
+            <tr><th data-i18n="nut.protein">Protein</th><td data-i18n="nut.v.protein">2 g</td><th data-i18n="nut.iron">Demir</th><td data-i18n="nut.v.iron">1,7 mg</td></tr>
+            <tr><th data-i18n="nut.fat">Yağ</th><td data-i18n="nut.v.fat">1,5 g</td><th data-i18n="nut.sodium">Sodyum</th><td data-i18n="nut.v.sodium">45 mg</td></tr>
+            <tr><th data-i18n="nut.fibre">Lif</th><td data-i18n="nut.v.fibre">1 g</td><th data-i18n="nut.potassium">Potasyum</th><td data-i18n="nut.v.potassium">454 mg</td></tr>
+            <tr><th data-i18n="nut.cholesterol">Kolesterol</th><td>0</td><th data-i18n="nut.b1">B1 vitamini</th><td data-i18n="nut.v.b1">0,22 mg</td></tr>
+            <tr><th data-i18n="nut.b3">B3 vitamini</th><td data-i18n="nut.v.b3">0,6 mg</td><th data-i18n="nut.b2">B2 vitamini</th><td data-i18n="nut.v.b2">0,22 mg</td></tr>
+          </tbody>
+        </table>
+
+        <h3 data-i18n="common.cherry">Kiraz</h3>
+        <p data-i18n="products.cherry.text">
+          Baharın habercisi kiraz, yoğun antioksidan içeriğiyle bilinir ve kalp sağlığına iyi geldiği belirtilir.
+          A vitamini yönünden zengin olan kirazdaki karotin göz sağlığını destekler; meyvede melatonin de
+          bulunur. Doğal bir tatlı olarak sofralarda yer alır, sapları da geleneksel olarak kullanılır. En kaliteli
+          kirazları özenle seçip uluslararası pazarlara ihraç ediyoruz.
+        </p>
+
+        <h3 data-i18n="faq.title">Sıkça sorulan sorular</h3>
+        <div class="faq">
+          <details>
+            <summary data-i18n="faq.q1">Kestaneleriniz nerede yetiştiriliyor?</summary>
+            <p data-i18n="faq.a1">Kestanelerimiz Ege Bölgesi'nin en verimli topraklarında, özellikle Ödemiş, Beydağ ve Bozdağ yaylalarında yetişmektedir.</p>
+          </details>
+          <details>
+            <summary data-i18n="faq.q2">Ürünleriniz nasıl işleniyor ve paketleniyor?</summary>
+            <p data-i18n="faq.a2">Hasat edilen ürünlerimiz modern tesislerimizde seçilir, boylanır ve hijyenik koşullarda paketlenir.</p>
+          </details>
+          <details>
+            <summary data-i18n="faq.q3">Ürünlerinizin tazeliğini nasıl koruyorsunuz?</summary>
+            <p data-i18n="faq.a3">Ürünlerimiz özel soğutmalı depolarda saklanır ve sevkiyat aşamasına kadar doğal tazeliğini korur.</p>
+          </details>
+        </div>
+      </article>
+    </div>
+
+    <div class="panel panel--wide" id="gorseller" role="dialog" aria-modal="true" aria-labelledby="gorseller-title" hidden>
+      <div class="panel__scrim" data-close></div>
+      <article class="panel__sheet">
+        <button class="panel__close" type="button" data-close aria-label="Kapat" data-i18n-attr="aria-label:ui.close"><span></span></button>
+        <div class="panel__mark" data-emblem aria-hidden="true"></div>
+        <p class="eyebrow" data-i18n="nav.gallery">Görseller</p>
+        <h2 id="gorseller-title" data-i18n="gallery.title">Tesisimizden ve bahçelerden</h2>
+        <h3 data-i18n="gallery.facility">Tesis ve paketleme</h3>
+        <div class="gallery">
+          <a class="gallery__item" href="gallery/tesis.webp">
+            <img src="gallery/tesis-k.webp" alt="Ödemiş'teki tesisimiz" data-i18n-attr="alt:gal.facility" width="640" height="427" loading="lazy" decoding="async" />
+            <span data-i18n="gal.facility">Ödemiş'teki tesisimiz</span>
+          </a>
+          <a class="gallery__item" href="gallery/secme-hatti.webp">
+            <img src="gallery/secme-hatti-k.webp" alt="Seçme ve ayıklama hattı" data-i18n-attr="alt:gal.sorting" width="640" height="360" loading="lazy" decoding="async" />
+            <span data-i18n="gal.sorting">Seçme ve ayıklama hattı</span>
+          </a>
+          <a class="gallery__item" href="gallery/yukleme.webp">
+            <img src="gallery/yukleme-k.webp" alt="Paletlenen çuvalların kamyona yüklenmesi" data-i18n-attr="alt:gal.loading" width="640" height="332" loading="lazy" decoding="async" />
+            <span data-i18n="gal.loading">Paletlenen çuvalların kamyona yüklenmesi</span>
+          </a>
+          <a class="gallery__item" href="gallery/cuvallar.webp">
+            <img src="gallery/cuvallar-k.webp" alt="Ağzı fileyle kapatılmış çuvallar" data-i18n-attr="alt:gal.sacks" width="640" height="360" loading="lazy" decoding="async" />
+            <span data-i18n="gal.sacks">Ağzı fileyle kapatılmış çuvallar</span>
+          </a>
+          <a class="gallery__item" href="gallery/etiketli-fileler.webp">
+            <img src="gallery/etiketli-fileler-k.webp" alt="Etiketli fileler" data-i18n-attr="alt:gal.labelled" width="640" height="427" loading="lazy" decoding="async" />
+            <span data-i18n="gal.labelled">Etiketli fileler</span>
+          </a>
+          <a class="gallery__item" href="gallery/file-ve-kozalar.webp">
+            <img src="gallery/file-ve-kozalar-k.webp" alt="Fileler, kozalar ve kestane" data-i18n-attr="alt:gal.netsBurrs" width="640" height="396" loading="lazy" decoding="async" />
+            <span data-i18n="gal.netsBurrs">Fileler, kozalar ve kestane</span>
+          </a>
+          <a class="gallery__item" href="gallery/fileler.webp">
+            <img src="gallery/fileler-k.webp" alt="Kırmızı ve siyah filelerde kestane" data-i18n-attr="alt:gal.nets" width="640" height="426" loading="lazy" decoding="async" />
+            <span data-i18n="gal.nets">Kırmızı ve siyah filelerde kestane</span>
+          </a>
+          <a class="gallery__item" href="gallery/fileler-dikey.webp">
+            <img src="gallery/fileler-dikey-k.webp" alt="Paketlenmiş kestane" data-i18n-attr="alt:gal.packed" width="360" height="640" loading="lazy" decoding="async" />
+            <span data-i18n="gal.packed">Paketlenmiş kestane</span>
+          </a>
+        </div>
+        <h3 data-i18n="common.chestnutCherry">Kestane ve kiraz</h3>
+        <div class="gallery">
+          <a class="gallery__item" href="gallery/kozalar.webp">
+            <img src="gallery/kozalar-k.webp" alt="Dalında kestane kozaları" data-i18n-attr="alt:gal.burrs" width="477" height="640" loading="lazy" decoding="async" />
+            <span data-i18n="gal.burrs">Dalında kestane kozaları</span>
+          </a>
+          <a class="gallery__item" href="gallery/kestane.webp">
+            <img src="gallery/kestane-k.webp" alt="Kestane" data-i18n-attr="alt:common.chestnut" width="501" height="640" loading="lazy" decoding="async" />
+            <span data-i18n="common.chestnut">Kestane</span>
+          </a>
+          <a class="gallery__item" href="gallery/kiraz-dali.webp">
+            <img src="gallery/kiraz-dali-k.webp" alt="Dalında kiraz" data-i18n-attr="alt:gal.cherryBranch" width="640" height="426" loading="lazy" decoding="async" />
+            <span data-i18n="gal.cherryBranch">Dalında kiraz</span>
+          </a>
+          <a class="gallery__item" href="gallery/kiraz-hasadi.webp">
+            <img src="gallery/kiraz-hasadi-k.webp" alt="Kiraz hasadı" data-i18n-attr="alt:gal.cherryHarvest" width="640" height="360" loading="lazy" decoding="async" />
+            <span data-i18n="gal.cherryHarvest">Kiraz hasadı</span>
+          </a>
+          <a class="gallery__item" href="gallery/kiraz.webp">
+            <img src="gallery/kiraz-k.webp" alt="Kiraz" data-i18n-attr="alt:common.cherry" width="550" height="450" loading="lazy" decoding="async" />
+            <span data-i18n="common.cherry">Kiraz</span>
+          </a>
+        </div>
+      </article>
+      <div class="lightbox" hidden>
+        <figure>
+          <img alt="" />
+          <figcaption></figcaption>
+        </figure>
+        <button class="lightbox__nav lightbox__nav--prev" type="button" aria-label="Önceki görsel" data-i18n-attr="aria-label:ui.prevImage"><span></span></button>
+        <button class="lightbox__nav lightbox__nav--next" type="button" aria-label="Sonraki görsel" data-i18n-attr="aria-label:ui.nextImage"><span></span></button>
+        <button class="panel__close lightbox__close" type="button" aria-label="Görseli kapat" data-i18n-attr="aria-label:ui.closeImage"><span></span></button>
+      </div>
+    </div>
+
+    <!-- Blog: four articles, opened from the top menu. The list and the articles share the panel,
+         one shown at a time; each article has an address of its own (#blog-kalibre-rehberi), so it
+         can be linked to, and the browser's back button retraces the steps (src/panels.js). Its
+         images are in public/blog/ (renders from the story's own scenes), the small copies on the
+         cards; none is fetched before the panel opens. The texts are keyed under `blog.` (the
+         nutrition figures reuse the table's keys); a language without them shows them in Turkish. -->
+    <div class="panel panel--wide panel--blog" id="blog" role="dialog" aria-modal="true" aria-labelledby="blog-title" hidden>
+      <div class="panel__scrim" data-close></div>
+      <article class="panel__sheet">
+        <button class="panel__close" type="button" data-close aria-label="Kapat" data-i18n-attr="aria-label:ui.close"><span></span></button>
+
+        <div class="blog__list">
+          <div class="panel__mark" data-emblem aria-hidden="true"></div>
+          <p class="eyebrow" data-i18n="nav.blog">Blog</p>
+          <h2 id="blog-title" data-i18n="blog.title">Bahçeden ihracata kestane</h2>
+          <p class="panel__lead" data-i18n="blog.lead">Pişirme, boylar, saklama ve ambalaj üzerine; otuz yıllık tecrübemizden derlediğimiz yazılar.</p>
+          <ul class="blog__cards">
+            <li class="blog__card">
+              <div class="blog__thumb">
+                <img src="blog/pisirme-k.webp" alt="Kabukları çatlayıp açılmış, közlenmiş kestaneler" data-i18n-attr="alt:blog.cooking.alt" width="640" height="400" loading="lazy" decoding="async" />
+              </div>
+              <div class="blog__text">
+                <p class="blog__meta"><span data-i18n="blog.cooking.cat">Mutfak</span><time datetime="2026-11-21" data-i18n="blog.cooking.date">21 Kasım 2026</time></p>
+                <h3><a href="#blog-kestane-pisirme" data-i18n="blog.cooking.title">Fırından köze: kestane pişirmenin yolları</a></h3>
+                <p class="blog__excerpt" data-i18n="blog.cooking.excerpt">Fırın, tava, haşlama, buhar ve köz: kestaneyi pişirmenin ve sunmanın yolları.</p>
+                <p class="blog__read" data-i18n="blog.cooking.read">4 dk okuma</p>
+              </div>
+            </li>
+            <li class="blog__card">
+              <div class="blog__thumb">
+                <img src="blog/kalibre-k.webp" alt="Ahşap masada, çam kozalakları ve mandalinalar arasında beyaz bir kâse dolusu kestane" data-i18n-attr="alt:blog.caliber.alt" width="640" height="400" loading="lazy" decoding="async" />
+              </div>
+              <div class="blog__text">
+                <p class="blog__meta"><span data-i18n="blog.caliber.cat">Rehber</span><time datetime="2026-11-14" data-i18n="blog.caliber.date">14 Kasım 2026</time></p>
+                <h3><a href="#blog-kalibre-rehberi" data-i18n="blog.caliber.title">Kalibre rehberi: kestane boyları nasıl okunur?</a></h3>
+                <p class="blog__excerpt" data-i18n="blog.caliber.excerpt">40–45 mi, 70–75 mi? Boyların ağırlık ve genişlik olarak karşılığı.</p>
+                <p class="blog__read" data-i18n="blog.caliber.read">3 dk okuma</p>
+              </div>
+            </li>
+            <li class="blog__card">
+              <div class="blog__thumb">
+                <img src="blog/saklama-k.webp" alt="Dalında, yaprakların arasında yeşil dikenli kestane kozaları" data-i18n-attr="alt:blog.fresh.alt" width="640" height="400" loading="lazy" decoding="async" />
+              </div>
+              <div class="blog__text">
+                <p class="blog__meta"><span data-i18n="blog.fresh.cat">Saklama</span><time datetime="2026-11-09" data-i18n="blog.fresh.date">9 Kasım 2026</time></p>
+                <h3><a href="#blog-kestane-saklama" data-i18n="blog.fresh.title">Kestane nasıl taze kalır?</a></h3>
+                <p class="blog__excerpt" data-i18n="blog.fresh.excerpt">Evde ve depoda kestaneyi taze tutmanın pratik yolları.</p>
+                <p class="blog__read" data-i18n="blog.fresh.read">3 dk okuma</p>
+              </div>
+            </li>
+            <li class="blog__card">
+              <div class="blog__thumb">
+                <img src="blog/ambalaj-k.webp" alt="Sonbahar yaprakları üzerinde, açılmış dikenli kozalarının içinde parlak kestaneler" data-i18n-attr="alt:blog.packaging.alt" width="640" height="400" loading="lazy" decoding="async" />
+              </div>
+              <div class="blog__text">
+                <p class="blog__meta"><span data-i18n="blog.packaging.cat">Ambalaj</span><time datetime="2026-11-03" data-i18n="blog.packaging.date">3 Kasım 2026</time></p>
+                <h3><a href="#blog-ambalaj-secenekleri" data-i18n="blog.packaging.title">1 kg'dan 1.000 kg'a: hangi ambalaj kime uygun?</a></h3>
+                <p class="blog__excerpt" data-i18n="blog.packaging.excerpt">Perakende, toptan ve sanayi için fileden big bag'e seçeneklerimiz.</p>
+                <p class="blog__read" data-i18n="blog.packaging.read">3 dk okuma</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <article class="post" id="blog-kestane-pisirme" aria-labelledby="blog-kestane-pisirme-title" hidden>
+          <a class="post__back" href="#blog" data-i18n="blog.back">Tüm yazılar</a>
+          <figure class="post__hero">
+            <img src="blog/pisirme.webp" alt="Kabukları çatlayıp açılmış, közlenmiş kestaneler" data-i18n-attr="alt:blog.cooking.alt" width="1600" height="1000" loading="lazy" decoding="async" />
+          </figure>
+          <header class="post__head">
+            <p class="eyebrow" data-i18n="blog.cooking.cat">Mutfak</p>
+            <h2 id="blog-kestane-pisirme-title" tabindex="-1" data-i18n="blog.cooking.title">Fırından köze: kestane pişirmenin yolları</h2>
+            <p class="post__lead" data-i18n="blog.cooking.lead">
+              Közde pişen kestane, kış aylarının en sevilen tatlarından biridir. Kestaneyi evde pişirmek de zor değildir:
+              doğru bir hazırlıkla fırında, tavada, kaynar suda, buharda ya da közde pişirilebilir ve her yöntem ayrı bir
+              lezzet verir. Bu yazıda yöntemleri ve kestaneyi sofraya taşımanın yollarını derledik.
+            </p>
+            <p class="post__meta">
+              <span class="post__mark" data-emblem aria-hidden="true"></span><span>Menkur Tarım</span><time datetime="2026-11-21" data-i18n="blog.cooking.date">21 Kasım 2026</time><span data-i18n="blog.cooking.read">4 dk okuma</span>
+            </p>
+          </header>
+          <div class="post__body">
+            <h3 data-i18n="blog.cooking.prep.h">Hazırlık: yıkama ve çentik</h3>
+            <p data-i18n="blog.cooking.prep.p1">
+              Kestaneleri önce bol suyla yıkayıp süzün. Ardından keskin bir bıçakla her birinin kabuğunun şişkin yüzüne
+              bir çizik ya da artı biçiminde bir çentik atın; bıçağın yalnızca kabuğu kesmesi yeterlidir.
+            </p>
+            <p data-i18n="blog.cooking.prep.p2">
+              Çentik, pişirmenin en önemli adımıdır. Kestane ısındıkça içindeki nem buhara dönüşür; çentik bu buhara bir
+              çıkış yolu açar ve kabuğun patlamasını önler. Pişerken aralanan çentik, soymayı da kolaylaştırır.
+            </p>
+            <p data-i18n="blog.cooking.prep.p3">
+              İsteğe bağlı bir adım daha var: çentikli kestaneleri pişirmeden önce yarım saat kadar suda bekletmek. Bu,
+              özellikle fırında ve közde, kestanenin içinin yumuşak kalmasına ve kabuğun kolay ayrılmasına yardımcı
+              olabilir. Aynı boydaki kestaneleri bir arada pişirmek ise hepsinin aynı sürede hazır olmasını sağlar; boylar
+              için <a href="#blog-kalibre-rehberi">kalibre rehberimize</a> göz atabilirsiniz.
+            </p>
+            <figure class="post__figure">
+              <img src="blog/pisirme-tava.webp" alt="Bir sokak tezgâhında, delikli kestane tavasının yanında közlenmiş kestaneler" data-i18n-attr="alt:blog.cooking.pan.alt" width="1200" height="750" loading="lazy" decoding="async" />
+              <figcaption data-i18n="blog.cooking.pan.cap">Kestane kebap: tavada közlenmiş kestaneler.</figcaption>
+            </figure>
+
+            <h3 data-i18n="blog.cooking.oven.h">Fırında</h3>
+            <p data-i18n="blog.cooking.oven.p">
+              Çentikli kestaneleri bir fırın tepsisine, çentikleri yukarı bakacak şekilde tek sıra dizin. Önceden ısıtılmış,
+              200 °C civarındaki fırında, boyuna göre genellikle 20–30 dakika pişirin. Kabuklar açılıp içi yumuşadığında
+              kestane hazırdır.
+            </p>
+
+            <h3 data-i18n="blog.cooking.pan.h">Tavada: kestane kebap usulü</h3>
+            <p data-i18n="blog.cooking.pan.p">
+              Sokaklarda satılan kestane kebabını evde hatırlatan yöntem tavadır. Delikli bir kestane tavası ya da kalın
+              tabanlı bir tava kullanın. Kestaneleri tek sıra yayın, kapağı kapalı tutun ve orta ateşte ara sıra sallayarak,
+              kabuklar yer yer kararıp açılana dek pişirin.
+            </p>
+
+            <h3 data-i18n="blog.cooking.boil.h">Haşlama ve buhar</h3>
+            <p data-i18n="blog.cooking.boil.p1">
+              Haşlamak için çentikli kestaneleri kaynar suya atın ve boyuna göre yaklaşık 20–30 dakika pişirin. Haşlanan
+              kestane yumuşak olur; püre, pilav ve tatlılar için çoğunlukla bu yöntem tercih edilir.
+            </p>
+            <p data-i18n="blog.cooking.boil.p2">
+              Buharda pişirmek de benzer bir sonuç verir: çentikli kestaneleri bir buhar sepetine yerleştirin ve kapağı
+              kapalı tencerede, kaynayan suyun buharında yaklaşık 20–30 dakika tutun.
+            </p>
+
+            <h3 data-i18n="blog.cooking.embers.h">Közde</h3>
+            <p data-i18n="blog.cooking.embers.p">
+              Mangalda ya da sobada kestane pişirmenin sırrı, alevi değil korları kullanmaktır. Kestaneleri delikli bir
+              tavaya ya da tel ızgaraya koyup korların üstünde tutun ve sık sık çevirin. Kabuklar kararıp açıldığında ve içi
+              yumuşadığında kestane hazırdır.
+            </p>
+
+            <aside class="post__fact">
+              <h4 data-i18n="blog.cooking.fact.h">Bir bakışta</h4>
+              <dl class="post__pairs">
+                <div><dt data-i18n="blog.cooking.fact.oven">Fırın</dt><dd data-i18n="blog.cooking.fact.ovenHow">200 °C civarında, genellikle 20–30 dakika</dd></div>
+                <div><dt data-i18n="blog.cooking.fact.pan">Tava</dt><dd data-i18n="blog.cooking.fact.panHow">Kapak kapalı, orta ateşte, ara sıra sallayarak</dd></div>
+                <div><dt data-i18n="blog.cooking.fact.boil">Haşlama</dt><dd data-i18n="blog.cooking.fact.boilHow">Kaynar suda, yaklaşık 20–30 dakika</dd></div>
+                <div><dt data-i18n="blog.cooking.fact.steam">Buhar</dt><dd data-i18n="blog.cooking.fact.steamHow">Kapalı tencerede, yaklaşık 20–30 dakika</dd></div>
+                <div><dt data-i18n="blog.cooking.fact.embers">Köz</dt><dd data-i18n="blog.cooking.fact.embersHow">Korların üstünde, sık sık çevirerek</dd></div>
+              </dl>
+              <p class="post__note" data-i18n="blog.cooking.fact.note">Süreler kestanenin boyuna göre değişir; kabuk açılıp içi yumuşadığında kestane hazırdır.</p>
+            </aside>
+
+            <h3 data-i18n="blog.cooking.peel.h">Sıcakken soyun</h3>
+            <p data-i18n="blog.cooking.peel.p">
+              Kestaneyi pişer pişmez, sıcakken soyun: kabuk çentikten itibaren kolayca açılır, ince iç zar da onunla
+              birlikte ayrılır. Kestane soğudukça zarı yapışmaya başlar. Fırından ya da tavadan çıkan kestaneleri birkaç
+              dakika temiz bir bezle örtmek bu işi daha da kolaylaştırır.
+            </p>
+
+            <h3 data-i18n="blog.cooking.serve.h">Sofrada kestane</h3>
+            <p data-i18n="blog.cooking.serve.p1">
+              Közlenmiş kestane sıcak sıcak, olduğu gibi yenir. Haşlanıp soyulmuş kestane ise birçok tarifin parçası olur:
+              tereyağı ve sütle ezilerek hazırlanan kestane püresi, et ve kümes hayvanlarının yanında sevilen bir
+              garnitürdür; kestaneli pilav da kış sofralarında sık rastlanan bir lezzettir.
+            </p>
+            <p data-i18n="blog.cooking.serve.p2">
+              Tatlılarda da kestanenin yeri büyüktür: kestane kreması ve kestane unuyla yapılan pastalar bunlardan yalnızca
+              ikisidir. Kestane şekeri ise bütün tanelerin şeker şurubunda uzun ve sabırlı bir pişirmeyle hazırlandığı
+              geleneksel bir tatlıdır; bu yüzden en iri boylar tercih edilir.
+            </p>
+            <aside class="post__fact">
+              <h4 data-i18n="blog.cooking.nutrition.h">100 g kestanede</h4>
+              <dl class="post__figures">
+                <div><dt data-i18n="nut.energy">Enerji</dt><dd data-i18n="nut.v.energy">194 kcal</dd></div>
+                <div><dt data-i18n="nut.carbs">Karbonhidrat</dt><dd data-i18n="nut.v.carbs">42,1 g</dd></div>
+                <div><dt data-i18n="nut.protein">Protein</dt><dd data-i18n="nut.v.protein">2 g</dd></div>
+                <div><dt data-i18n="nut.fat">Yağ</dt><dd data-i18n="nut.v.fat">1,5 g</dd></div>
+                <div><dt data-i18n="nut.potassium">Potasyum</dt><dd data-i18n="nut.v.potassium">454 mg</dd></div>
+              </dl>
+              <p class="post__note" data-i18n="blog.cooking.nutrition.source">Tüm değerler: <a href="#besin-degerleri">Ürünlerimiz › Besin değerleri</a></p>
+            </aside>
+
+            <p class="post__end" data-i18n="blog.cooking.end">
+              Kestaneyi pişireceğiniz güne kadar nasıl saklayacağınızı <a href="#blog-kestane-saklama">saklama
+              rehberimizde</a>, kestanelerimizi ise <a href="#urunler">Ürünlerimiz</a> bölümünde bulabilirsiniz.
+            </p>
+          </div>
+          <footer class="post__foot">
+            <h3 data-i18n="blog.more">Diğer yazılar</h3>
+            <ul class="post__more">
+              <li>
+                <a href="#blog-kalibre-rehberi">
+                  <img src="blog/kalibre-k.webp" alt="Ahşap masada, çam kozalakları ve mandalinalar arasında beyaz bir kâse dolusu kestane" data-i18n-attr="alt:blog.caliber.alt" width="640" height="400" loading="lazy" decoding="async" />
+                  <span class="post__more-cat" data-i18n="blog.caliber.cat">Rehber</span>
+                  <span class="post__more-title" data-i18n="blog.caliber.title">Kalibre rehberi: kestane boyları nasıl okunur?</span>
+                </a>
+              </li>
+              <li>
+                <a href="#blog-kestane-saklama">
+                  <img src="blog/saklama-k.webp" alt="Dalında, yaprakların arasında yeşil dikenli kestane kozaları" data-i18n-attr="alt:blog.fresh.alt" width="640" height="400" loading="lazy" decoding="async" />
+                  <span class="post__more-cat" data-i18n="blog.fresh.cat">Saklama</span>
+                  <span class="post__more-title" data-i18n="blog.fresh.title">Kestane nasıl taze kalır?</span>
+                </a>
+              </li>
+              <li>
+                <a href="#blog-ambalaj-secenekleri">
+                  <img src="blog/ambalaj-k.webp" alt="Sonbahar yaprakları üzerinde, açılmış dikenli kozalarının içinde parlak kestaneler" data-i18n-attr="alt:blog.packaging.alt" width="640" height="400" loading="lazy" decoding="async" />
+                  <span class="post__more-cat" data-i18n="blog.packaging.cat">Ambalaj</span>
+                  <span class="post__more-title" data-i18n="blog.packaging.title">1 kg'dan 1.000 kg'a: hangi ambalaj kime uygun?</span>
+                </a>
+              </li>
+            </ul>
+            <a class="btn post__all" href="#blog" data-i18n="blog.back">Tüm yazılar</a>
+          </footer>
+        </article>
+
+        <article class="post" id="blog-kalibre-rehberi" aria-labelledby="blog-kalibre-rehberi-title" hidden>
+          <a class="post__back" href="#blog" data-i18n="blog.back">Tüm yazılar</a>
+          <figure class="post__hero">
+            <img src="blog/kalibre.webp" alt="Ahşap masada, çam kozalakları ve mandalinalar arasında beyaz bir kâse dolusu kestane" data-i18n-attr="alt:blog.caliber.alt" width="1600" height="1000" loading="lazy" decoding="async" />
+          </figure>
+          <header class="post__head">
+            <p class="eyebrow" data-i18n="blog.caliber.cat">Rehber</p>
+            <h2 id="blog-kalibre-rehberi-title" tabindex="-1" data-i18n="blog.caliber.title">Kalibre rehberi: kestane boyları nasıl okunur?</h2>
+            <p class="post__lead" data-i18n="blog.caliber.lead">
+              Kestane alım satımında boy denince akla milimetre değil, bir sayı aralığı gelir: 40–45, 60–65, 100+. Bu
+              sayılar bir kilogramda kaç tane kestane olduğunu söyler. Bu rehberde boyların ne anlama geldiğini, tane
+              ağırlığına ve genişliğe nasıl çevrildiğini ve hangi boyun hangi işe yaradığını anlatıyoruz.
+            </p>
+            <p class="post__meta">
+              <span class="post__mark" data-emblem aria-hidden="true"></span><span>Menkur Tarım</span><time datetime="2026-11-14" data-i18n="blog.caliber.date">14 Kasım 2026</time><span data-i18n="blog.caliber.read">3 dk okuma</span>
+            </p>
+          </header>
+          <div class="post__body">
+            <h3 data-i18n="blog.caliber.count.h">Boy, kilogramdaki tane sayısıdır</h3>
+            <p data-i18n="blog.caliber.count.p1">
+              Kestane, kalibre makinelerinde kilogramdaki adede göre boylara ayrılır. 60–65 boyu, bir kilogramda 60 ila 65
+              tane kestane bulunduğu anlamına gelir. Sayı küçüldükçe tane büyür: 40–45 en iri boydur; 100+ ise bir
+              kilogramında 100 ya da daha fazla tane bulunan en küçük boydur.
+            </p>
+            <figure class="post__figure">
+              <img src="blog/kalibre-yakin.webp" alt="Beyaz zemin üzerinde, aralıklı dizilmiş parlak kabuklu taze kestaneler" data-i18n-attr="alt:blog.caliber.close.alt" width="1200" height="750" loading="lazy" decoding="async" />
+              <figcaption data-i18n="blog.caliber.close.cap">Kabuğu parlak, dolgun taze kestaneler.</figcaption>
+            </figure>
+            <p data-i18n="blog.caliber.count.p2">
+              Kestane ticaretinde boy genellikle bu şekilde ifade edilir. Bunun pratik bir nedeni vardır: alıcının asıl
+              bilmek istediği, bir kilogramda kaç tane olduğu ve bir tanenin ne kadar geldiğidir. Genişlik ise kestanenin
+              şekline ve hangi yönden ölçüldüğüne göre değişebilir.
+            </p>
+
+            <h3 data-i18n="blog.caliber.weight.h">Sayıdan ağırlığa</h3>
+            <p data-i18n="blog.caliber.weight.p">
+              Bir tanenin ortalama ağırlığı basit bir bölmeyle bulunur: 1.000 gram, kilogramdaki tane sayısına bölünür.
+              40–45 boyunda bir kestane yaklaşık 22–25 gram, 70–75 boyunda 13–14 gram, 100+ boyunda ise 10 gram ve
+              altındadır. Aşağıdaki tablo, en iriden en küçüğe yedi boyun karşılıklarını gösteriyor.
+            </p>
+            <div class="post__table">
+              <table>
+                <caption data-i18n="blog.caliber.table.cap">Boylar ve yaklaşık karşılıkları</caption>
+                <thead>
+                  <tr>
+                    <th scope="col" data-i18n="blog.caliber.table.size">Boy (adet/kg)</th>
+                    <th scope="col" data-i18n="blog.caliber.table.weight">Tane ağırlığı (g)</th>
+                    <th scope="col" data-i18n="blog.caliber.table.width">Yaklaşık genişlik (mm)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><th scope="row">40–45</th><td>22–25</td><td>42</td></tr>
+                  <tr><th scope="row">50–55</th><td>18–20</td><td>39</td></tr>
+                  <tr><th scope="row">60–65</th><td>15–17</td><td>37</td></tr>
+                  <tr><th scope="row">70–75</th><td>13–14</td><td>35</td></tr>
+                  <tr><th scope="row">80–85</th><td data-i18n="blog.caliber.table.w80">12–12,5</td><td>34</td></tr>
+                  <tr><th scope="row">90–95</th><td data-i18n="blog.caliber.table.w90">10,5–11</td><td>32</td></tr>
+                  <tr><th scope="row">100+</th><td>≤ 10</td><td>31</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="post__note" data-i18n="blog.caliber.table.note">
+              Genişlikler tane ağırlığından hesaplanmış tahmini değerlerdir; aynı boydaki kestaneler arasında çeşide ve
+              şekle göre farklar olabilir.
+            </p>
+
+            <h3 data-i18n="blog.caliber.width.h">Küçük fark, iki kat ağırlık</h3>
+            <p data-i18n="blog.caliber.width.p">
+              Boylar arasındaki fark, bakınca sanıldığından küçüktür. En iri boy yaklaşık 42 mm, en küçük boy yaklaşık
+              31 mm genişliğindedir; aradaki fark bir santimetreyi biraz geçer. Oysa bu fark, ağırlıkta iki katından
+              fazlasına karşılık gelir. Nedeni basittir: şekil aynı kaldıkça hacim, dolayısıyla ağırlık, genişliğin küpüyle
+              artar.
+            </p>
+            <aside class="post__fact">
+              <h4 data-i18n="blog.caliber.fact.h">Akılda kalsın</h4>
+              <ul>
+                <li data-i18n="blog.caliber.fact.1">Boy sayısı küçüldükçe kestane büyür.</li>
+                <li data-i18n="blog.caliber.fact.2">Tane ağırlığı = 1.000 g ÷ kilogramdaki tane sayısı.</li>
+                <li data-i18n="blog.caliber.fact.3">En iri ve en küçük boy arasında genişlikte yaklaşık 11 mm, ağırlıkta iki kattan fazla fark vardır.</li>
+              </ul>
+            </aside>
+
+            <h3 data-i18n="blog.caliber.use.h">Hangi boy, hangi iş için?</h3>
+            <p data-i18n="blog.caliber.use.p1">
+              İri boylar genellikle tanenin görünümünün öne çıktığı kullanımlarda tercih edilir: közleme, taze satış ve
+              kestane şekeri gibi. Tanenin bütün olarak sunulduğu bu ürünlerde tanelerin birbirine benzemesi de
+              önemlidir. Orta boylar hem sofralık hem de işlemeye uygun, dengeli bir seçenektir. Küçük boylar ise
+              çoğunlukla püre, un ve krema gibi işlenmiş ürünlerde değerlendirilir.
+            </p>
+            <p data-i18n="blog.caliber.use.p2">
+              Boy seçimi <a href="#blog-kestane-pisirme">pişirmeyi</a> de etkiler. Aynı boydaki kestaneler aynı sürede
+              pişer; karışık boylu bir partide küçükler yanarken iriler çiğ kalabilir. Boylamanın değeri de buradadır:
+              aynı filede, aynı çuvalda, aynı boyda kestane.
+            </p>
+
+            <h3 data-i18n="blog.caliber.order.h">Sipariş verirken</h3>
+            <p data-i18n="blog.caliber.order.p">
+              Siparişte istenen boyu adet/kg olarak belirtmek, alıcıyla tedarikçi arasında en net dili kurar. Boyla
+              birlikte ürünün nasıl kullanılacağını ve hangi ambalajın istendiğini paylaşmak, doğru teklifin ilk adımıdır:
+              közlemelik taze satış için iri bir boy, püre üretimi için daha küçük bir boy istenebilir. Ambalaj seçenekleri
+              için <a href="#blog-ambalaj-secenekleri">ambalaj yazımıza</a> göz atabilirsiniz.
+            </p>
+
+            <p class="post__end" data-i18n="blog.caliber.end">
+              Her boyu gerçek ölçüsüyle görmek için <a href="#boylar">Ürünlerimiz › Boylar</a> bölümüne göz atın:
+              kestane orada seçtiğiniz boyda, bir santimetre cetvelinin üstünde durur. Onu üç boyutlu çevirebilir,
+              telefonunuzda AR ile gerçek boyutunda masanıza koyabilirsiniz.
+            </p>
+          </div>
+          <footer class="post__foot">
+            <h3 data-i18n="blog.more">Diğer yazılar</h3>
+            <ul class="post__more">
+              <li>
+                <a href="#blog-kestane-pisirme">
+                  <img src="blog/pisirme-k.webp" alt="Kabukları çatlayıp açılmış, közlenmiş kestaneler" data-i18n-attr="alt:blog.cooking.alt" width="640" height="400" loading="lazy" decoding="async" />
+                  <span class="post__more-cat" data-i18n="blog.cooking.cat">Mutfak</span>
+                  <span class="post__more-title" data-i18n="blog.cooking.title">Fırından köze: kestane pişirmenin yolları</span>
+                </a>
+              </li>
+              <li>
+                <a href="#blog-kestane-saklama">
+                  <img src="blog/saklama-k.webp" alt="Dalında, yaprakların arasında yeşil dikenli kestane kozaları" data-i18n-attr="alt:blog.fresh.alt" width="640" height="400" loading="lazy" decoding="async" />
+                  <span class="post__more-cat" data-i18n="blog.fresh.cat">Saklama</span>
+                  <span class="post__more-title" data-i18n="blog.fresh.title">Kestane nasıl taze kalır?</span>
+                </a>
+              </li>
+              <li>
+                <a href="#blog-ambalaj-secenekleri">
+                  <img src="blog/ambalaj-k.webp" alt="Sonbahar yaprakları üzerinde, açılmış dikenli kozalarının içinde parlak kestaneler" data-i18n-attr="alt:blog.packaging.alt" width="640" height="400" loading="lazy" decoding="async" />
+                  <span class="post__more-cat" data-i18n="blog.packaging.cat">Ambalaj</span>
+                  <span class="post__more-title" data-i18n="blog.packaging.title">1 kg'dan 1.000 kg'a: hangi ambalaj kime uygun?</span>
+                </a>
+              </li>
+            </ul>
+            <a class="btn post__all" href="#blog" data-i18n="blog.back">Tüm yazılar</a>
+          </footer>
+        </article>
+
+        <article class="post" id="blog-kestane-saklama" aria-labelledby="blog-kestane-saklama-title" hidden>
+          <a class="post__back" href="#blog" data-i18n="blog.back">Tüm yazılar</a>
+          <figure class="post__hero">
+            <img src="blog/saklama.webp" alt="Dalında, yaprakların arasında yeşil dikenli kestane kozaları" data-i18n-attr="alt:blog.fresh.alt" width="1600" height="1000" loading="lazy" decoding="async" />
+          </figure>
+          <header class="post__head">
+            <p class="eyebrow" data-i18n="blog.fresh.cat">Saklama</p>
+            <h2 id="blog-kestane-saklama-title" tabindex="-1" data-i18n="blog.fresh.title">Kestane nasıl taze kalır?</h2>
+            <p class="post__lead" data-i18n="blog.fresh.lead">
+              Kestane, doğru koşullarda saklandığında tazeliğini ve lezzetini korur. Sırrı basittir: serin bir ortam,
+              çevresinde dolaşan hava ve nefes alan bir ambalaj. Bu yazıda kestanenin evde ve büyük miktarlarda nasıl
+              saklandığını anlatıyoruz.
+            </p>
+            <p class="post__meta">
+              <span class="post__mark" data-emblem aria-hidden="true"></span><span>Menkur Tarım</span><time datetime="2026-11-09" data-i18n="blog.fresh.date">9 Kasım 2026</time><span data-i18n="blog.fresh.read">3 dk okuma</span>
+            </p>
+          </header>
+          <div class="post__body">
+            <h3 data-i18n="blog.fresh.fruit.h">Kestane taze bir meyvedir</h3>
+            <p data-i18n="blog.fresh.fruit.p">
+              Kestane, fındık ve ceviz gibi kuru yemişlerden farklı olarak taze bir meyvedir. 100 gramında yalnızca 1,5 g
+              yağ bulunur, karbonhidrat ise 42,1 grama ulaşır; yapısı nişastalı ve suludur. Bu yüzden kestane bir meyve
+              gibi, serin ve havadar bir ortamda saklanmayı sever.
+            </p>
+
+            <h3 data-i18n="blog.fresh.choose.h">Seçerken</h3>
+            <p data-i18n="blog.fresh.choose.p">
+              İyi saklama, iyi seçimle başlar. Taze kestanenin kabuğu parlak ve gergin, tanesi dolgun ve boyuna göre
+              ağırdır. Aynı boydaki kestaneleri bir arada saklamak da işinizi kolaylaştırır: pişirirken hepsi aynı sürede
+              hazır olur. Boylar için <a href="#blog-kalibre-rehberi">kalibre rehberimize</a> göz atabilirsiniz.
+            </p>
+
+            <figure class="post__quote">
+              <blockquote><p data-i18n="blog.fresh.quote">Serin bir ortam, dolaşan hava ve nefes alan bir ambalaj: kestanenin sevdiği üç şey.</p></blockquote>
+            </figure>
+
+            <h3 data-i18n="blog.fresh.home.h">Evde: buzdolabında</h3>
+            <p data-i18n="blog.fresh.home.p1">
+              Evde kestanenin en iyi yeri buzdolabının sebzelik bölmesidir; bu bölme meyve ve sebzeler için ayrılmış,
+              serin ve nemi dengeli bir köşedir. Birkaç basit alışkanlık tazeliğini korur:
+            </p>
+            <ul class="post__list">
+              <li data-i18n="blog.fresh.home.li1">Kestaneyi filesinde ya da delikli bir poşette saklayın; böylece çevresinde hava dolaşmaya devam eder.</li>
+              <li data-i18n="blog.fresh.home.li2">Ağzı kapalı bir poşet yerine nefes alan bir ambalaj seçin.</li>
+              <li data-i18n="blog.fresh.home.li3">Yakında pişireceğiniz kestaneleri serin, gölge ve havadar bir köşede de tutabilirsiniz; daha uzun süre için buzdolabını tercih edin.</li>
+              <li data-i18n="blog.fresh.home.li4">Pişireceğiniz kadarını çıkarıp geri kalanı aynı ambalajında saklamaya devam edin.</li>
+            </ul>
+            <p data-i18n="blog.fresh.home.p2">Bu koşullarda taze kestane genellikle birkaç hafta tazeliğini korur.</p>
+
+            <h3 data-i18n="blog.fresh.freeze.h">Daha uzun süre için: dondurma</h3>
+            <p data-i18n="blog.fresh.freeze.p">
+              Kestaneyi daha uzun süre saklamak isterseniz dondurabilirsiniz. Çiğ kestaneyi kabuğuyla (isterseniz önceden
+              çentik atarak) ya da haşlayıp soyduktan sonra hava almayan dondurucu poşetlerine koyun; böylece birkaç ay
+              boyunca kullanılabilir. Porsiyonlara ayırarak dondurmak, ihtiyacınız kadarını çıkarmayı kolaylaştırır.
+              Dondurulmuş kestane genellikle çözdürülmeden pişirilebilir; yöntemleri
+              <a href="#blog-kestane-pisirme">pişirme yazımızda</a> anlattık.
+            </p>
+
+            <h3 data-i18n="blog.fresh.store.h">Büyük miktarlarda: soğuk hava deposu</h3>
+            <p data-i18n="blog.fresh.store.p1">
+              Kestaneyi büyük miktarlarda saklamanın yolu soğuk hava deposudur. İşlenen kestanelerimiz sevkiyata kadar soğuk
+              hava depolarımızda saklanır ve doğal tazeliğini korur. 1.000 metrekarelik tesisimizde, büyüklükleri 110 ile
+              200 metrekare arasında değişen iki soğuk hava deposu bulunur.
+            </p>
+            <p data-i18n="blog.fresh.store.p2">
+              Depoda serin ve nemi dengeli bir ortam kestanenin tazeliğini korur. Ürünün çevresinde havanın dolaşabilmesi
+              de en az sıcaklık kadar önemlidir; bu yüzden kestane genellikle nefes alan ambalajlarda ve paletler üzerinde
+              saklanır. Paletlerin arasında boşluk bırakmak, havanın yığınların arasından da dolaşmasını sağlar.
+            </p>
+
+            <h3 data-i18n="blog.fresh.pack.h">Nefes alan ambalaj</h3>
+            <p data-i18n="blog.fresh.pack.p">
+              File ve file çuvallar, ağ yapılarıyla ürünün çevresinde havanın serbestçe dolaşmasını sağlar. Ağzı fileyle
+              kapatılan big bag'ler de aynı anlayışla hazırlanır. Hangi ambalajın hangi alıcıya uygun olduğunu
+              <a href="#blog-ambalaj-secenekleri">ambalaj yazımızda</a> anlattık.
+            </p>
+            <figure class="post__figure">
+              <img src="blog/saklama-yigin.webp" alt="Yukarıdan bakışla, yan yana yığılmış taze kestaneler" data-i18n-attr="alt:blog.fresh.heap.alt" width="1200" height="750" loading="lazy" decoding="async" />
+              <figcaption data-i18n="blog.fresh.heap.cap">Yığın halinde taze kestaneler.</figcaption>
+            </figure>
+
+            <h3 data-i18n="blog.fresh.road.h">Yolda: soğuk zincir</h3>
+            <p data-i18n="blog.fresh.road.p">
+              Saklama, depodan çıkınca da sürer. Sevkiyat günü fileler ve çuvallar paletlenir ve soğuk hava deposundan
+              soğutmalı kamyonlara yüklenir; soğutmalı dorse, depodaki serinliği yolda da sürdürür. Böylece kestane,
+              alıcısına depodaki tazeliğiyle ulaşır.
+            </p>
+
+            <aside class="post__fact">
+              <h4 data-i18n="blog.fresh.fact.h">Bir bakışta</h4>
+              <dl class="post__pairs">
+                <div><dt data-i18n="blog.fresh.fact.fridge">Buzdolabı</dt><dd data-i18n="blog.fresh.fact.fridgeHow">Filede ya da delikli poşette, sebzelik bölmesinde; genellikle birkaç hafta</dd></div>
+                <div><dt data-i18n="blog.fresh.fact.room">Serin bir köşe</dt><dd data-i18n="blog.fresh.fact.roomHow">Gölge ve havadar bir yerde; yakında pişirilecek kadarı</dd></div>
+                <div><dt data-i18n="blog.fresh.fact.freezer">Dondurucu</dt><dd data-i18n="blog.fresh.fact.freezerHow">Çiğ ya da haşlanıp soyulmuş, hava almayan poşette; birkaç ay</dd></div>
+                <div><dt data-i18n="blog.fresh.fact.store">Depo</dt><dd data-i18n="blog.fresh.fact.storeHow">Soğuk hava deposunda, nefes alan ambalajda, paletler üzerinde</dd></div>
+              </dl>
+            </aside>
+
+            <p class="post__end" data-i18n="blog.fresh.end">
+              Kestanelerimizin nasıl işlenip paketlendiğini <a href="#urunler">Ürünlerimiz</a> bölümünde bulabilir, toptan ve
+              ihracat siparişleri için <a href="#iletisim-bilgi">bize ulaşabilirsiniz</a>.
+            </p>
+          </div>
+          <footer class="post__foot">
+            <h3 data-i18n="blog.more">Diğer yazılar</h3>
+            <ul class="post__more">
+              <li>
+                <a href="#blog-kestane-pisirme">
+                  <img src="blog/pisirme-k.webp" alt="Kabukları çatlayıp açılmış, közlenmiş kestaneler" data-i18n-attr="alt:blog.cooking.alt" width="640" height="400" loading="lazy" decoding="async" />
+                  <span class="post__more-cat" data-i18n="blog.cooking.cat">Mutfak</span>
+                  <span class="post__more-title" data-i18n="blog.cooking.title">Fırından köze: kestane pişirmenin yolları</span>
+                </a>
+              </li>
+              <li>
+                <a href="#blog-kalibre-rehberi">
+                  <img src="blog/kalibre-k.webp" alt="Ahşap masada, çam kozalakları ve mandalinalar arasında beyaz bir kâse dolusu kestane" data-i18n-attr="alt:blog.caliber.alt" width="640" height="400" loading="lazy" decoding="async" />
+                  <span class="post__more-cat" data-i18n="blog.caliber.cat">Rehber</span>
+                  <span class="post__more-title" data-i18n="blog.caliber.title">Kalibre rehberi: kestane boyları nasıl okunur?</span>
+                </a>
+              </li>
+              <li>
+                <a href="#blog-ambalaj-secenekleri">
+                  <img src="blog/ambalaj-k.webp" alt="Sonbahar yaprakları üzerinde, açılmış dikenli kozalarının içinde parlak kestaneler" data-i18n-attr="alt:blog.packaging.alt" width="640" height="400" loading="lazy" decoding="async" />
+                  <span class="post__more-cat" data-i18n="blog.packaging.cat">Ambalaj</span>
+                  <span class="post__more-title" data-i18n="blog.packaging.title">1 kg'dan 1.000 kg'a: hangi ambalaj kime uygun?</span>
+                </a>
+              </li>
+            </ul>
+            <a class="btn post__all" href="#blog" data-i18n="blog.back">Tüm yazılar</a>
+          </footer>
+        </article>
+
+        <article class="post" id="blog-ambalaj-secenekleri" aria-labelledby="blog-ambalaj-secenekleri-title" hidden>
+          <a class="post__back" href="#blog" data-i18n="blog.back">Tüm yazılar</a>
+          <figure class="post__hero post__hero--low">
+            <img src="blog/ambalaj.webp" alt="Sonbahar yaprakları üzerinde, açılmış dikenli kozalarının içinde parlak kestaneler" data-i18n-attr="alt:blog.packaging.alt" width="1600" height="1000" loading="lazy" decoding="async" />
+          </figure>
+          <header class="post__head">
+            <p class="eyebrow" data-i18n="blog.packaging.cat">Ambalaj</p>
+            <h2 id="blog-ambalaj-secenekleri-title" tabindex="-1" data-i18n="blog.packaging.title">1 kg'dan 1.000 kg'a: hangi ambalaj kime uygun?</h2>
+            <p class="post__lead" data-i18n="blog.packaging.lead">
+              Doğru ambalaj kestanenin tazeliğini korur, taşımayı kolaylaştırır ve ürünü alıcının satış biçimine hazır
+              getirir. Kestanelerimizi isteğe göre 1 kg'dan 1.000 kg'a kadar farklı ambalajlarda hazırlıyoruz. Hangisinin
+              kime uygun olduğunu bu yazıda özetledik.
+            </p>
+            <p class="post__meta">
+              <span class="post__mark" data-emblem aria-hidden="true"></span><span>Menkur Tarım</span><time datetime="2026-11-03" data-i18n="blog.packaging.date">3 Kasım 2026</time><span data-i18n="blog.packaging.read">3 dk okuma</span>
+            </p>
+          </header>
+          <div class="post__body">
+            <h3 data-i18n="blog.packaging.net.h">Neden file?</h3>
+            <p data-i18n="blog.packaging.net.p">
+              Kestane taze bir üründür ve havayla temas eden ambalajları sever; nedenini <a href="#blog-kestane-saklama">saklama
+              rehberimizde</a> anlattık. File, ağ yapısıyla ürünün çevresinde havanın serbestçe dolaşmasını sağlar; alıcı da
+              ürünü ambalajı açmadan görebilir. Bu yüzden seçeneklerimizin çoğu fileye dayanır: 1 ve 5 kg'lık fileler ile 25
+              kg'lık file çuvallar. Paketleme, ürünün tazeliğini koruyan hijyenik bir ortamda yapılır.
+            </p>
+
+            <h3 data-i18n="blog.packaging.retail.h">1 kg ve 5 kg file: perakende</h3>
+            <p data-i18n="blog.packaging.retail.p">
+              1 kg'lık file, market rafı ve son tüketici için en uygun ambalajımızdır. Elde kolay taşınır, rafta düzgün
+              durur ve markamızı taşıyan etiketiyle ürünü tanıtır; tüketicinin ihtiyacı kadarını almasını da kolaylaştırır.
+              5 kg'lık file ise daha büyük hacimle çalışan manavlar, pazar satıcıları ve kestaneyi bol kullanan işletmeler
+              için pratik bir ara boydur.
+            </p>
+
+            <h3 data-i18n="blog.packaging.sack.h">25 kg file çuval: toptan</h3>
+            <p data-i18n="blog.packaging.sack.p">
+              25 kg'lık file çuval, toptan satışa yönelik ambalajımızdır. Toptancılar, dağıtıcılar ve ürünü kendi
+              ambalajına aktaran paketleyiciler için uygundur. Elle taşınabilecek ağırlıktadır, palet üzerinde düzenli
+              biçimde istiflenir ve file yapısı sayesinde ürün havalanmaya devam eder.
+            </p>
+
+            <h3 data-i18n="blog.packaging.bigbag.h">1.000 kg big bag: sanayi</h3>
+            <p data-i18n="blog.packaging.bigbag.p">
+              En büyük ambalajımız 1.000 kg'lık big bag'dir. Kestaneyi kestane şekeri, püre ya da un gibi ürünlere işleyen
+              sanayi kuruluşları ve ürünü kendi tesisinde yeniden paketleyen büyük alıcılar için uygundur. Big bag palet
+              üzerinde forkliftle taşınır; büyük miktarda ürünün az sayıda hareketle, hızlı ve düzenli yüklenmesini sağlar.
+              Ağzı fileyle kapatılan big bag'lerde de ürün hava almaya devam eder.
+            </p>
+
+            <aside class="post__fact">
+              <h4 data-i18n="blog.packaging.fact.h">Hangi ambalaj kime uygun?</h4>
+              <dl class="post__pairs">
+                <div><dt data-i18n="blog.packaging.fact.p1">1 kg file</dt><dd data-i18n="blog.packaging.fact.u1">Perakende: market rafı, son tüketici</dd></div>
+                <div><dt data-i18n="blog.packaging.fact.p2">5 kg file</dt><dd data-i18n="blog.packaging.fact.u2">Manav, pazar, küçük işletme</dd></div>
+                <div><dt data-i18n="blog.packaging.fact.p3">25 kg file çuval</dt><dd data-i18n="blog.packaging.fact.u3">Toptancı, hal, dağıtıcı, paketleyici</dd></div>
+                <div><dt data-i18n="blog.packaging.fact.p4">1.000 kg big bag</dt><dd data-i18n="blog.packaging.fact.u4">Sanayi, büyük alıcı</dd></div>
+              </dl>
+            </aside>
+
+            <h3 data-i18n="blog.packaging.choose.h">Seçerken üç soru</h3>
+            <p data-i18n="blog.packaging.choose.p">
+              Doğru ambalajı bulmak için üç soru yeterlidir. Kestane nerede satılacak: rafta mı, tezgâhta mı, yoksa
+              işlenmek üzere bir tesiste mi? Ürünü kim, nasıl taşıyacak: elle mi, forkliftle mi? Ve ürün ne kadar sürede
+              satılıp tüketilecek? Raftaki tüketiciye küçük file, tezgâha 5 kg'lık file ya da 25 kg'lık çuval, tesise big
+              bag uygundur.
+            </p>
+
+            <h3 data-i18n="blog.packaging.jute.h">Jüt çuval ve özel istekler</h3>
+            <p data-i18n="blog.packaging.jute.p">
+              File ve big bag'in yanında jüt çuval da kullanılır. Ambalajın türü ve ağırlığı alıcının ihtiyacına göre
+              belirlenir; üretimimizin yaklaşık %80'i yurt dışına gittiğinden, ambalaj çoğu zaman alıcının pazarına ve
+              satış biçimine göre seçilir. Hangi ambalaj seçilirse seçilsin, kestane sevkiyata kadar soğuk hava deposunda
+              bekler; yükleme günü paletlenerek soğutmalı kamyonlarla yola çıkar.
+            </p>
+            <figure class="post__figure">
+              <img src="blog/ambalaj-satis.webp" alt="Bir sokak tezgâhında, satıcının ocağı üzerinde kestaneler" data-i18n-attr="alt:blog.packaging.stall.alt" width="1200" height="750" loading="lazy" decoding="async" />
+              <figcaption data-i18n="blog.packaging.stall.cap">Perakende satış noktasında kestane.</figcaption>
+            </figure>
+
+            <h3 data-i18n="blog.packaging.see.h">Ambalajları gerçek boyutlarında görün</h3>
+            <p data-i18n="blog.packaging.see.p">
+              Bir big bag'in ya da 25 kg'lık bir çuvalın büyüklüğünü kafada canlandırmak kolay değildir.
+              <a href="#boylar">Ürünlerimiz › Boylar</a>
+              bölümünde 1 ve 5 kg'lık fileleri, 25 kg'lık file çuvalı ve 1.000 kg'lık big bag'i üç boyutlu inceleyebilir,
+              telefonunuzda AR ile gerçek boyutlarında odanıza yerleştirebilirsiniz.
+            </p>
+
+            <p class="post__end" data-i18n="blog.packaging.end">
+              İhtiyacınıza en uygun ambalajı birlikte belirleyelim: toptan ve ihracat siparişleri için
+              <a href="#iletisim-bilgi">İletişim</a> bölümünden bize ulaşabilirsiniz.
+            </p>
+          </div>
+          <footer class="post__foot">
+            <h3 data-i18n="blog.more">Diğer yazılar</h3>
+            <ul class="post__more">
+              <li>
+                <a href="#blog-kestane-pisirme">
+                  <img src="blog/pisirme-k.webp" alt="Kabukları çatlayıp açılmış, közlenmiş kestaneler" data-i18n-attr="alt:blog.cooking.alt" width="640" height="400" loading="lazy" decoding="async" />
+                  <span class="post__more-cat" data-i18n="blog.cooking.cat">Mutfak</span>
+                  <span class="post__more-title" data-i18n="blog.cooking.title">Fırından köze: kestane pişirmenin yolları</span>
+                </a>
+              </li>
+              <li>
+                <a href="#blog-kalibre-rehberi">
+                  <img src="blog/kalibre-k.webp" alt="Ahşap masada, çam kozalakları ve mandalinalar arasında beyaz bir kâse dolusu kestane" data-i18n-attr="alt:blog.caliber.alt" width="640" height="400" loading="lazy" decoding="async" />
+                  <span class="post__more-cat" data-i18n="blog.caliber.cat">Rehber</span>
+                  <span class="post__more-title" data-i18n="blog.caliber.title">Kalibre rehberi: kestane boyları nasıl okunur?</span>
+                </a>
+              </li>
+              <li>
+                <a href="#blog-kestane-saklama">
+                  <img src="blog/saklama-k.webp" alt="Dalında, yaprakların arasında yeşil dikenli kestane kozaları" data-i18n-attr="alt:blog.fresh.alt" width="640" height="400" loading="lazy" decoding="async" />
+                  <span class="post__more-cat" data-i18n="blog.fresh.cat">Saklama</span>
+                  <span class="post__more-title" data-i18n="blog.fresh.title">Kestane nasıl taze kalır?</span>
+                </a>
+              </li>
+            </ul>
+            <a class="btn post__all" href="#blog" data-i18n="blog.back">Tüm yazılar</a>
+          </footer>
+        </article>
+      </article>
+    </div>
+
+    <div class="panel" id="iletisim-bilgi" role="dialog" aria-modal="true" aria-labelledby="iletisim-title" hidden>
+      <div class="panel__scrim" data-close></div>
+      <article class="panel__sheet">
+        <button class="panel__close" type="button" data-close aria-label="Kapat" data-i18n-attr="aria-label:ui.close"><span></span></button>
+        <div class="panel__mark" data-emblem aria-hidden="true"></div>
+        <p class="eyebrow" data-i18n="nav.contact">İletişim</p>
+        <h2 id="iletisim-title" data-i18n="contact.title">Bizimle iletişime geçin</h2>
+        <p class="panel__lead" data-i18n="contact.lead">
+          Ürünlerimizi denemek ve farkımızı görmek için hemen bizimle iletişime geçin. Güvenilirliğimiz ve
+          kalitemizle tanışın.
+        </p>
+        <dl class="contact">
+          <div>
+            <dt data-i18n="contact.address">Adres</dt>
+            <dd>
+              Zafer Mahallesi, Birgi Yolu Üzeri No:3/2<br />Ödemiş / İzmir / Türkiye<br />
+              <a href="https://www.google.com/maps/search/?api=1&amp;query=Menkur%20Tar%C4%B1m%20Zafer%20Mahallesi%20Birgi%20Yolu%20%C3%96demi%C5%9F%20%C4%B0zmir" target="_blank" rel="noopener" data-i18n="contact.map">Haritada aç</a>
+            </dd>
+          </div>
+          <div><dt data-i18n="contact.phone">Telefon</dt><dd><a href="tel:+902325455628">+90 (232) 545 56 28</a></dd></div>
+          <div><dt data-i18n="contact.mobile">GSM</dt><dd><a href="tel:+905326774522">+90 (532) 677 45 22</a></dd></div>
+          <div><dt data-i18n="contact.fax">Faks</dt><dd>+90 (232) 545 54 90</dd></div>
+          <div><dt data-i18n="contact.email">E-posta</dt><dd><a href="mailto:info@menkurtarim.com.tr">info@menkurtarim.com.tr</a></dd></div>
+          <div><dt data-i18n="contact.export">İhracat</dt><dd><a href="mailto:export@menkurtarim.com.tr">export@menkurtarim.com.tr</a></dd></div>
+          <div><dt>Instagram</dt><dd><a href="https://www.instagram.com/menkurtarim/" target="_blank" rel="noopener">@menkurtarim</a></dd></div>
+          <div><dt>Facebook</dt><dd><a href="https://www.facebook.com/menkur.agricultural" target="_blank" rel="noopener">menkur.agricultural</a></dd></div>
+        </dl>
+        <div class="cta">
+          <a class="btn btn--solid" href="mailto:info@menkurtarim.com.tr" data-i18n="contact.cta.email">E-posta gönderin</a>
+          <a class="btn" href="mailto:export@menkurtarim.com.tr" data-i18n="contact.cta.export">İhracat için yazın</a>
+          <a class="btn" href="tel:+902325455628" data-i18n="contact.cta.call">Arayın</a>
+        </div>
+        <p class="credits">
+          <strong data-i18n="credits.title">Kaynaklar</strong> · <span data-i18n="credits.images">Görseller</span>: NASA Blue Marble,
+          <span data-i18n="credits.moon">NASA SVS LRO Ay haritası</span> · Sentinel-2 cloudless 2017,
+          <a href="https://s2maps.eu" target="_blank" rel="noopener">EOX IT Services</a> (<span data-i18n="credits.copernicus">Copernicus verisi</span>, CC BY 4.0) ·
+          <span data-i18n="credits.elevation">Yükseklik</span>: SRTM / AWS Terrain Tiles · <span data-i18n="credits.tree">Ağaç modeli</span>:
+          <a href="https://sketchfab.com/3d-models/realistic-hd-red-horse-chestnut-2330-78483cea9440439fae4bd4fb71b18ca7" target="_blank" rel="noopener">PlantCatalog</a>
+          (CC BY 4.0)
+        </p>
+      </article>
+    </div>
+
+    <div id="geo-label" aria-hidden="true">
+      <span class="geo__line"></span>
+      <div class="geo__card">
+        <strong data-i18n="geo.name">Ödemiş</strong>
+        <span data-i18n="geo.place">İzmir · Aydın arası, Bozdağlar</span>
+        <span class="geo__coords" data-i18n="geo.coords">38°13′K · 27°58′D</span>
+      </div>
+    </div>
+
+    <nav class="rail" aria-label="Bölümler" data-i18n-attr="aria-label:rail.label"></nav>
+
+    <!-- while the next part of the story is still being prepared (main.js holds it there) -->
+    <div class="waiting" role="status" aria-live="polite">
+      <i aria-hidden="true"></i>
+      <span data-i18n="ui.preparing">Hazırlanıyor</span>
+    </div>
+
+    <div class="hint" aria-hidden="true">
+      <span data-i18n="hint.scroll">Keşfetmek için kaydırın</span>
+      <i></i>
+    </div>
+
+    <!-- The assistant (src/chat/): a round button at the foot of the page and the sheet it opens.
+         Hidden until the story is up and the assistant's server has answered that it is there
+         (GET /api/health); what is said in it is written by src/chat/chat.js, as plain text. -->
+    <div class="chat" data-chat hidden>
+      <button class="chat__launch" type="button" aria-expanded="false" aria-controls="chat-sheet" aria-label="Asistana soru sorun" data-i18n-attr="aria-label:chat.open">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 4.5h14a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2h-7.5L7 21v-4H5a2 2 0 0 1-2-2V6.5a2 2 0 0 1 2-2Z" />
+          <path d="M8 9.5h8M8 12.5h5" />
+        </svg>
+      </button>
+      <section class="chat__sheet" id="chat-sheet" role="dialog" aria-labelledby="chat-title">
+        <header class="chat__head">
+          <span class="chat__mark" data-emblem aria-hidden="true"></span>
+          <div class="chat__name">
+            <h2 id="chat-title" data-i18n="chat.title">Menkur Asistan</h2>
+            <p data-i18n="chat.sub">Yapay zekâ destekli yardımcı</p>
+          </div>
+          <button class="chat__close" type="button" aria-label="Sohbeti kapat" data-i18n-attr="aria-label:chat.close"><span></span></button>
+        </header>
+        <div class="chat__log">
+          <p class="chat__msg chat__msg--bot" data-i18n="chat.hello">Merhaba! Kestanelerimiz, boylar, ambalaj ve sipariş hakkındaki sorularınızı yanıtlayabilirim.</p>
+          <div class="chat__msgs" role="log" aria-live="polite" aria-label="Sohbet" data-i18n-attr="aria-label:chat.log"></div>
+          <div class="chat__ideas" role="group" aria-label="Örnek sorular" data-i18n-attr="aria-label:chat.ideas">
+            <button type="button" data-i18n="chat.idea1">Hangi boylarda kestane sunuyorsunuz?</button>
+            <button type="button" data-i18n="chat.idea2">Ambalaj seçenekleriniz nelerdir?</button>
+            <button type="button" data-i18n="chat.idea3">İhracat için nasıl teklif alabilirim?</button>
+          </div>
+        </div>
+        <form class="chat__form">
+          <textarea class="chat__field" rows="1" enterkeyhint="send" autocomplete="off" placeholder="Sorunuzu yazın…" aria-label="Sorunuz" data-i18n-attr="placeholder:chat.placeholder; aria-label:chat.field"></textarea>
+          <button class="chat__send" type="submit" aria-label="Gönder" data-i18n-attr="aria-label:chat.send" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6" /></svg>
+          </button>
+        </form>
+      </section>
+    </div>
+
+    <div id="track"></div>
+
+    <!-- The globe's pictures are what the story waits for first, and the Bozdağlar file is what
+         the mountains' own files wait for; src/main.js asks for them only once it has come in
+         and run. Asked for from here, they are on their way meanwhile, and the code finds them
+         there. Which set a device takes is the same test as in main.js (`quality.low`,
+         `quality.ktx2`), and the names are those of src/scenes/space.js and src/lib/geo.js: kept
+         to these few, since a file asked for here that the code no longer asks for is fetched
+         for nothing (in development main.js checks each one: `checkPreloads`). Down here at
+         the end of the page, not in the head: the page's own code and styles, which the head
+         names, are asked for first and come in ahead of these. -->
+    <script>
+      (() => {
+        const params = new URLSearchParams(location.search);
+        const low = params.has('low') || Math.min(innerWidth, innerHeight) < 600 || (navigator.hardwareConcurrency || 8) <= 4;
+        const ktx2 = low && typeof WebAssembly === 'object' && !params.has('noktx');
+        // (`as` and `crossorigin` as the loaders ask: three's fetch for a KTX2 file, an <img>
+        // for a WebP; anything else and the browser fetches the file twice)
+        const preload = (href, as) => {
+          const link = document.createElement('link');
+          Object.assign(link, { rel: 'preload', as, crossOrigin: 'anonymous', href });
+          document.head.append(link);
+        };
+        // the colour photos, compressed where the phone can unpack them; then the masks and heights
+        const photos = ktx2
+          ? ['earth-day-2k.ktx2', 'aegean-day-1k.ktx2', 'earth-night-1k.ktx2', 'moon-color-512.ktx2']
+          : low
+            ? ['earth-blue-marble-2k.webp', 'aegean-day-1k.webp', 'earth-night-1k.webp', 'moon-color-512.webp']
+            : ['earth-blue-marble-2k.webp', 'aegean-day-2k.webp', 'earth-night-2k.webp', 'moon-color.webp'];
+        const masks = low
+          ? ['aegean-height.webp', 'earth-water.webp', 'earth-topology-1k.webp', 'moon-height-512.webp']
+          : ['aegean-height.webp', 'earth-water.webp', 'earth-topology.webp', 'moon-height.webp'];
+        for (const name of photos) preload(`textures/${name}`, ktx2 ? 'fetch' : 'image');
+        for (const name of masks) preload(`textures/${name}`, 'image');
+        preload('geo/bozdag.json', 'fetch');
+      })();
+    </script>
+  </body>
+</html>

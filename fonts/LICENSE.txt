@@ -1,0 +1,11 @@
+The typefaces of the site, as the files Google Fonts serves for them (WOFF2, one file a script;
+Cormorant Garamond v21, Manrope v23), unchanged.
+
+Cormorant Garamond
+Copyright 2015 The Cormorant Project Authors (github.com/CatharsisFonts/Cormorant)
+
+Manrope
+Copyright 2019 The Manrope Project Authors (https://github.com/googlefonts/manrope)
+
+Both are licensed under the SIL Open Font License, Version 1.1. The licence, with a FAQ, is at
+https://openfontlicense.org (each file also names its copyright holders and this address).

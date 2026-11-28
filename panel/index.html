@@ -1,0 +1,3372 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- The owner's page: what visitors asked the site's assistant. Not for search engines, and
+         it sends nothing about itself to the pages it is opened from. -->
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <!-- This page shows text typed by strangers to someone holding the panel's password. That
+         text only ever enters the page as text (see `el` below); this is the second fence: the
+         page may talk to the API and load its own fonts and icon, and nothing else. (The charts
+         are drawn here, as SVG made element by element: nothing is fetched for them.) -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; font-src 'self'; img-src 'self'; connect-src 'self' https://menkurtarim.site http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#07080a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5efe3" media="(prefers-color-scheme: light)" />
+    <title>Sohbet Paneli · Menkur Tarım</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <!-- The site's two typefaces from the site's own files, declared as index.html declares
+         them (the hinted make for Windows and Linux, the plain one for phones and Macs).
+         Manrope's Cyrillic file is here for visitors who write in Russian. -->
+    <script>
+      (() => {
+        const dir = /Windows|X11/.test(navigator.userAgent) ? '../fonts/hinted/' : '../fonts/';
+        const scripts = [
+          ['cyrillic', 'U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116'],
+          [
+            'latin-ext',
+            'U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF',
+          ],
+          [
+            'latin',
+            'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD',
+          ],
+        ];
+        const faces = [
+          ['Cormorant Garamond', '600', 'cormorant-garamond'],
+          ['Manrope', '400 700', 'manrope'],
+        ];
+        let css = '';
+        for (const [family, weight, file] of faces) {
+          for (const [script, range] of scripts) {
+            css += `@font-face { font-family: '${family}'; font-style: normal; font-weight: ${weight}; font-display: swap; src: url(${dir}${file}-${script}.woff2) format('woff2'); unicode-range: ${range}; }\n`;
+          }
+        }
+        document.head.append(Object.assign(document.createElement('style'), { textContent: css }));
+      })();
+    </script>
+    <style>
+      /* The site's colours (src/style.css): near-black, cream, gold. Dark as the site is, and
+         a paper version of the same three for a reader whose system is set to light. `--bar`
+         is the colour of the charts that have one series (the subjects, the countries, the
+         days). The donuts split a whole into a few parts, each in a colour of its own: five
+         earthy hues that sit with the gold (gold, blue, green, brick, plum, `--c1` to `--c5`)
+         and a neutral gray (`--c0`) for "not known" and "other". Each mode has its own steps
+         of the five, checked with the dataviz validator against that mode's card surface,
+         every pair against every other (a part with no questions leaves its neighbours side
+         by side): no two closer than 8 for colour-blind eyes, 16 for anyone, each 3:1 or more
+         against the card. The gray is quieter on purpose and stays 10 or more from all five. */
+      :root {
+        color-scheme: dark;
+        --bg: #07080a;
+        --surface: #111318;
+        --surface-2: #1a1d24;
+        --line: rgba(243, 234, 217, 0.13);
+        --line-strong: rgba(243, 234, 217, 0.26);
+        --text: #f3ead9;
+        --text-2: #c6bdad;
+        --muted: #958d80;
+        --gold: #d9b26a;
+        --gold-ink: #1d140d;
+        --bar: #b98a3c;
+        --track: rgba(243, 234, 217, 0.07);
+        --warn: #ec835a;
+        --danger: #e66767;
+        --shadow: 0 18px 60px rgba(0, 0, 0, 0.6);
+        --shadow-tip: 0 6px 22px rgba(0, 0, 0, 0.55);
+        --c1: #c47f00;
+        --c2: #2865a8;
+        --c3: #53a367;
+        --c4: #9d4a3c;
+        --c5: #a774b7;
+        --c0: #423d37;
+        --serif: 'Cormorant Garamond', 'Times New Roman', serif;
+        --sans: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          color-scheme: light;
+          --bg: #f5efe3;
+          --surface: #fffbf3;
+          --surface-2: #f1e8d7;
+          --line: rgba(29, 20, 13, 0.14);
+          --line-strong: rgba(29, 20, 13, 0.3);
+          --text: #1d140d;
+          --text-2: #54473a;
+          --muted: #76685a;
+          --gold: #8a5f14;
+          --gold-ink: #fffbf3;
+          --bar: #a8792b;
+          --track: rgba(29, 20, 13, 0.07);
+          --warn: #b4491a;
+          --danger: #b3261e;
+          --shadow: 0 18px 60px rgba(29, 20, 13, 0.25);
+          --shadow-tip: 0 6px 22px rgba(29, 20, 13, 0.18);
+          --c1: #b28415;
+          --c2: #228cc9;
+          --c3: #3b7f4d;
+          --c4: #833a04;
+          --c5: #ac6293;
+          --c0: #ccc7bf;
+        }
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      html {
+        background: var(--bg);
+        -webkit-text-size-adjust: 100%;
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 400 15px/1.5 var(--sans);
+        overflow-wrap: break-word;
+      }
+      h1,
+      h2,
+      h3,
+      p,
+      ul,
+      figure,
+      fieldset,
+      dl,
+      dd {
+        margin: 0;
+        padding: 0;
+      }
+      ul {
+        list-style: none;
+      }
+      fieldset {
+        border: 0;
+        min-width: 0;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+        color: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      :focus-visible {
+        outline: 2px solid var(--gold);
+        outline-offset: 2px;
+      }
+      .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+
+      .brand {
+        font: 600 15px/1.1 var(--sans);
+        letter-spacing: 0.22em;
+        white-space: nowrap;
+      }
+      .brand span {
+        color: var(--gold);
+      }
+      .brand small {
+        display: block;
+        margin-top: 4px;
+        font: 500 12px/1.2 var(--sans);
+        letter-spacing: 0.02em;
+        color: var(--muted);
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 40px;
+        padding: 8px 16px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: transparent;
+        font-weight: 600;
+        font-size: 14px;
+        line-height: 1.2;
+        text-align: center;
+      }
+      .btn:hover {
+        background: var(--surface-2);
+      }
+      .btn:disabled {
+        opacity: 0.55;
+        cursor: default;
+      }
+      .btn--primary {
+        border-color: var(--gold);
+        background: var(--gold);
+        color: var(--gold-ink);
+      }
+      .btn--primary:hover {
+        background: var(--gold);
+        filter: brightness(1.08);
+      }
+      .btn--danger {
+        border-color: var(--danger);
+        color: var(--danger);
+      }
+      .btn--danger-solid {
+        border-color: var(--danger);
+        background: var(--danger);
+        color: #fff;
+      }
+      .btn--danger-solid:hover {
+        background: var(--danger);
+        filter: brightness(1.1);
+      }
+      @media (prefers-color-scheme: dark) {
+        .btn--danger-solid {
+          color: #14090a;
+        }
+      }
+
+      /* The password screen */
+      .login {
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 24px 16px;
+      }
+      .login__card {
+        width: 100%;
+        max-width: 400px;
+        padding: 32px 24px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--surface);
+        display: grid;
+        gap: 14px;
+      }
+      .login__card h1 {
+        font: 600 34px/1.1 var(--serif);
+        margin-top: 10px;
+      }
+      .login__lead {
+        color: var(--text-2);
+      }
+      .login__card label {
+        font-weight: 600;
+        font-size: 13px;
+        margin-top: 6px;
+      }
+      .login__note {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .field {
+        width: 100%;
+        min-height: 44px;
+        padding: 9px 12px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: var(--bg);
+        font-size: 16px;
+      }
+      .msg {
+        padding: 10px 12px;
+        border: 1px solid var(--warn);
+        border-radius: 8px;
+        font-weight: 500;
+      }
+
+      /* The top bar: the period drives everything under it, so it stays in reach */
+      .top {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: var(--bg);
+        border-bottom: 1px solid var(--line);
+        padding-top: env(safe-area-inset-top);
+      }
+      .top__in,
+      .page {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding-left: max(16px, env(safe-area-inset-left));
+        padding-right: max(16px, env(safe-area-inset-right));
+      }
+      .top__in {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px 16px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+      }
+      .top__acts {
+        display: flex;
+        gap: 8px;
+        margin-left: auto;
+      }
+      .top__acts .btn {
+        min-height: 36px;
+        padding: 6px 12px;
+      }
+      /* (one line, "MENKUR TARIM · Sohbet paneli", where there is room for it) */
+      @media (min-width: 900px) {
+        .top .brand small {
+          display: inline;
+          margin: 0 0 0 4px;
+          font-size: 14px;
+          letter-spacing: 0.02em;
+        }
+        .top .brand small::before {
+          content: '· ';
+        }
+      }
+      .seg {
+        display: flex;
+        border: 1px solid var(--line-strong);
+        border-radius: 9px;
+        padding: 2px;
+        gap: 2px;
+      }
+      .seg label {
+        position: relative;
+        flex: 1;
+      }
+      .seg input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        margin: 0;
+        cursor: pointer;
+      }
+      .seg span {
+        display: block;
+        padding: 7px 12px;
+        border-radius: 7px;
+        font-weight: 600;
+        font-size: 13.5px;
+        text-align: center;
+        white-space: nowrap;
+        color: var(--text-2);
+      }
+      .seg input:checked + span {
+        background: var(--gold);
+        color: var(--gold-ink);
+      }
+      .seg input:focus-visible + span {
+        outline: 2px solid var(--gold);
+        outline-offset: 2px;
+      }
+      @media (max-width: 640px) {
+        .seg {
+          order: 3;
+          width: 100%;
+        }
+      }
+      /* (on the narrowest phones the name and the two buttons still share one line) */
+      @media (max-width: 360px) {
+        .top__in {
+          gap: 10px;
+        }
+        .top .brand {
+          font-size: 13px;
+          letter-spacing: 0.16em;
+        }
+        .top__acts .btn {
+          padding: 6px 10px;
+        }
+      }
+      @media (max-height: 520px) {
+        .top {
+          position: static;
+        }
+      }
+
+      .page {
+        padding-top: 18px;
+        padding-bottom: calc(40px + env(safe-area-inset-bottom));
+      }
+      /* While newer numbers are on their way the old ones stay, dimmed: nothing jumps */
+      .is-busy .live {
+        opacity: 0.5;
+        transition: opacity 0.15s;
+      }
+      .empty {
+        padding: 18px 4px;
+        color: var(--text-2);
+      }
+      .hint {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .banner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px 16px;
+        margin-bottom: 18px;
+        padding: 12px 14px;
+        border: 1px solid var(--warn);
+        border-radius: 10px;
+        background: var(--surface);
+        font-weight: 500;
+      }
+      .banner span {
+        flex: 1 1 240px;
+      }
+      /* OpenAI refusing the assistant's calls: the one thing on this page the owner has to act on */
+      .fault {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 18px;
+        padding: 14px 16px;
+        border: 1px solid var(--danger);
+        border-left-width: 4px;
+        border-radius: 10px;
+        background: var(--surface);
+        font-weight: 500;
+      }
+      .fault svg {
+        width: 20px;
+        height: 20px;
+        flex: none;
+        margin-top: 1px;
+        color: var(--danger);
+      }
+      .fault p {
+        min-width: 0;
+      }
+      .fault small {
+        display: block;
+        margin-top: 4px;
+        font-size: 13px;
+        font-weight: 400;
+        color: var(--muted);
+      }
+
+      /* The four numbers. Each is a button that opens the list behind it, and says so. */
+      .range {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 8px;
+      }
+      @media (min-width: 760px) {
+        .tiles {
+          grid-template-columns: repeat(4, 1fr);
+          gap: 14px;
+        }
+      }
+      .tile {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        min-width: 0;
+        padding: 13px 14px 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--surface);
+        text-align: left;
+      }
+      .tile:hover {
+        border-color: var(--line-strong);
+        background: var(--surface-2);
+      }
+      .tile__label {
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--text-2);
+      }
+      .tile__value {
+        margin-top: auto;
+        padding-top: 4px;
+        font-size: 32px;
+        font-weight: 600;
+        line-height: 1.15;
+      }
+      .tile__go {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--gold);
+      }
+      .tile__go svg {
+        width: 13px;
+        height: 13px;
+        flex: none;
+      }
+      .tile:hover .tile__go span {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      .notice {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px 16px;
+        margin-top: 14px;
+        padding: 12px 14px;
+        border: 1px dashed var(--line-strong);
+        border-radius: 10px;
+        color: var(--text-2);
+      }
+      .notice__text {
+        flex: 1 1 220px;
+        display: grid;
+        gap: 4px;
+      }
+
+      /* The charts, each on a card of its own */
+      .charts {
+        margin-top: 26px;
+      }
+      .charts__cards {
+        display: grid;
+        gap: 14px;
+      }
+      .card {
+        min-width: 0;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--surface);
+      }
+      @media (min-width: 760px) {
+        .card {
+          padding: 18px 20px 20px;
+        }
+      }
+      .card__title {
+        font: 600 15px/1.3 var(--sans);
+      }
+      .card__sub {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .card__body {
+        margin-top: 12px;
+      }
+      .trio {
+        display: grid;
+        gap: 14px;
+      }
+      @media (min-width: 1000px) {
+        .trio {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+      /* (the device and the countries share a card: two short answers, side by side where
+         there is room, one under the other on a phone) */
+      .where {
+        display: grid;
+        gap: 18px;
+      }
+      .where__part + .where__part {
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+      }
+      @media (min-width: 760px) {
+        .where {
+          grid-template-columns: 1fr 1fr;
+          gap: 0;
+        }
+        .where__part:first-child {
+          padding-right: 24px;
+        }
+        .where__part + .where__part {
+          padding: 0 0 0 24px;
+          border-top: 0;
+          border-left: 1px solid var(--line);
+        }
+      }
+
+      /* Ranked bars: a name, a count and its share, and a thin bar on one baseline. A row that
+         opens the questions behind it ends in a chevron. */
+      .bars {
+        display: grid;
+        gap: 2px;
+      }
+      .bar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 5px 10px;
+        align-items: baseline;
+        width: calc(100% + 16px);
+        margin: 0 -8px;
+        padding: 7px 8px;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        text-align: left;
+      }
+      button.bar {
+        grid-template-columns: 1fr auto 14px;
+      }
+      button.bar:hover {
+        background: var(--surface-2);
+      }
+      .bar[aria-current='true'] {
+        background: var(--surface-2);
+        box-shadow: inset 0 0 0 1px var(--gold);
+      }
+      .bar__name {
+        font-weight: 500;
+        min-width: 0;
+      }
+      .bar__val {
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        font-weight: 600;
+      }
+      .bar__val small,
+      .legend__val small {
+        display: inline-block;
+        min-width: 3.4em;
+        text-align: right;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--muted);
+      }
+      .bar__go,
+      .legend__go {
+        width: 14px;
+        height: 14px;
+        align-self: center;
+        color: var(--muted);
+      }
+      .bar__track {
+        grid-column: 1 / -1;
+        height: 6px;
+        border-radius: 0 4px 4px 0;
+        background: var(--track);
+      }
+      .bar__track i {
+        display: block;
+        height: 100%;
+        min-width: 2px;
+        border-radius: 0 4px 4px 0;
+        background: var(--bar);
+      }
+      /* (beside their names, every bar gets a track of the same length, the numbers a column
+         of one width: a bar's length is then its share of the longest, row for row) */
+      @media (min-width: 760px) {
+        .bars--wide .bar {
+          grid-template-columns: 240px 1fr 7em;
+          align-items: center;
+        }
+        .bars--wide button.bar {
+          grid-template-columns: 240px 1fr 7em 14px;
+        }
+        .bars--wide .bar__track {
+          grid-column: 2;
+          grid-row: 1;
+          height: 10px;
+        }
+        .bars--wide .bar__val {
+          grid-column: 3;
+          text-align: right;
+        }
+      }
+      .linklike {
+        border: 0;
+        padding: 6px 0;
+        background: none;
+        color: var(--gold);
+        font-weight: 600;
+        font-size: 14px;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      /* A donut: the whole in the middle, the parts round it from the top, clockwise, the
+         biggest first and "not known" or "other" last; a 2px gap of the card's own colour
+         between them. The legend beside or under it is its table. */
+      .card--donut {
+        container-type: inline-size;
+      }
+      .donut {
+        position: relative;
+        display: grid;
+        gap: 14px;
+        justify-items: center;
+        margin-top: 12px;
+      }
+      .donut__fig {
+        position: relative;
+        width: 148px;
+        aspect-ratio: 1;
+      }
+      .donut__fig svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        forced-color-adjust: none;
+      }
+      .slice {
+        fill: var(--fill);
+        stroke: var(--surface);
+        stroke-width: 2px;
+        vector-effect: non-scaling-stroke;
+        cursor: pointer;
+        transition: opacity 0.12s;
+      }
+      .has-on .slice:not(.is-on) {
+        opacity: 0.35;
+      }
+      .donut__total {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-content: center;
+        text-align: center;
+        pointer-events: none;
+      }
+      .donut__total b {
+        font-size: 26px;
+        font-weight: 600;
+        line-height: 1.1;
+      }
+      .donut__total span {
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .legend {
+        display: grid;
+        gap: 1px;
+        width: 100%;
+      }
+      /* (the answers nobody gave, named in a line under the donut and its legend) */
+      .donut .legend__none {
+        grid-column: 1 / -1;
+        justify-self: stretch;
+        margin-top: 0;
+      }
+      @container (min-width: 430px) {
+        .donut {
+          grid-template-columns: 148px 1fr;
+          justify-items: stretch;
+          align-items: center;
+          gap: 14px 28px;
+        }
+      }
+      .legend__row {
+        display: grid;
+        grid-template-columns: 12px 1fr auto 14px;
+        align-items: center;
+        gap: 10px;
+        width: calc(100% + 16px);
+        margin: 0 -8px;
+        padding: 6px 8px;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        font-size: 14px;
+        text-align: left;
+      }
+      button.legend__row:hover,
+      .legend__row.is-on {
+        background: var(--surface-2);
+      }
+      .legend__row[aria-current='true'] {
+        box-shadow: inset 0 0 0 1px var(--gold);
+      }
+      .legend__row--sub {
+        padding-left: 30px;
+      }
+      .legend__row--sub .sw {
+        width: 6px;
+        height: 6px;
+        justify-self: center;
+        border-radius: 50%;
+      }
+      .legend__name {
+        min-width: 0;
+        line-height: 1.3;
+      }
+      .legend__val {
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .legend__go {
+        transition: transform 0.15s;
+      }
+      [aria-expanded='true'] > .legend__go {
+        transform: rotate(180deg);
+      }
+      .sw {
+        display: block;
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        background: var(--fill);
+        forced-color-adjust: none;
+      }
+      .hue-1 {
+        --fill: var(--c1);
+      }
+      .hue-2 {
+        --fill: var(--c2);
+      }
+      .hue-3 {
+        --fill: var(--c3);
+      }
+      .hue-4 {
+        --fill: var(--c4);
+      }
+      .hue-5 {
+        --fill: var(--c5);
+      }
+      .hue-0 {
+        --fill: var(--c0);
+      }
+      /* the one tooltip of a chart: the number first, the name under it */
+      .tip {
+        position: absolute;
+        z-index: 3;
+        max-width: min(260px, calc(100% - 8px));
+        padding: 7px 11px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: var(--surface-2);
+        box-shadow: var(--shadow-tip);
+        font-size: 13px;
+        line-height: 1.35;
+        pointer-events: none;
+        transform: translate(-50%, calc(-100% - 12px));
+      }
+      .tip b {
+        font-size: 14px;
+        font-weight: 700;
+      }
+      .tip span {
+        display: block;
+        color: var(--text-2);
+      }
+      .tip em {
+        display: block;
+        margin-top: 3px;
+        font-style: normal;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      /* Phone or computer: one line of shares over a thin bar split in two */
+      .split__line {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 20px;
+        font-size: 15px;
+      }
+      .split__line > span {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .split__line b {
+        font-weight: 600;
+      }
+      .split__line small {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .split {
+        display: flex;
+        gap: 2px;
+        height: 8px;
+        margin-top: 12px;
+      }
+      .split i {
+        display: block;
+        min-width: 2px;
+        height: 100%;
+        background: var(--fill);
+        forced-color-adjust: none;
+      }
+      .split i:first-child {
+        border-radius: 4px 0 0 4px;
+      }
+      .split i:last-child {
+        border-radius: 0 4px 4px 0;
+      }
+      .split i:only-child {
+        border-radius: 4px;
+      }
+
+      /* Questions per day: thin columns on a hairline baseline, one tooltip, a table twin */
+      .dz {
+        position: relative;
+        height: 120px;
+        margin: 30px 0 0 30px;
+        border-bottom: 1px solid var(--line-strong);
+        touch-action: pan-y;
+      }
+      .dz__grid {
+        position: absolute;
+        left: 0;
+        right: 0;
+        border-top: 1px solid var(--line);
+      }
+      .dz__grid span {
+        position: absolute;
+        right: 100%;
+        top: -0.75em;
+        margin-right: 8px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+      .dz__cols {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: flex-end;
+        gap: 2px;
+      }
+      .dz__cols--dense {
+        gap: 1px;
+      }
+      /* (a year of days is wider than a phone's gaps alone: the columns touch) */
+      .dz__cols--year {
+        gap: 0;
+      }
+      .dz__cols span {
+        flex: 1 1 0;
+        height: 100%;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+      }
+      .dz__cols i {
+        display: block;
+        width: 100%;
+        max-width: 20px;
+        border-radius: 4px 4px 0 0;
+        background: var(--bar);
+      }
+      .dz__cols span.is-on {
+        background: var(--track);
+      }
+      .dz__cols span.is-on i {
+        filter: brightness(1.25);
+      }
+      .dz__tip {
+        position: absolute;
+        bottom: 100%;
+        margin-bottom: 4px;
+        padding: 5px 9px;
+        border: 1px solid var(--line-strong);
+        border-radius: 7px;
+        background: var(--surface-2);
+        font-size: 13px;
+        white-space: nowrap;
+        pointer-events: none;
+        z-index: 2;
+      }
+      .dz__tip b {
+        font-weight: 600;
+      }
+      .dz__x {
+        display: flex;
+        justify-content: space-between;
+        margin: 6px 0 0 30px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .dz__more {
+        margin-top: 10px;
+        font-size: 13.5px;
+      }
+      .dz__more summary {
+        cursor: pointer;
+        color: var(--text-2);
+        width: fit-content;
+        padding: 2px 0;
+      }
+      .dz__more table {
+        margin-top: 8px;
+        border-collapse: collapse;
+        font-variant-numeric: tabular-nums;
+      }
+      .dz__more th,
+      .dz__more td {
+        padding: 4px 18px 4px 0;
+        text-align: left;
+        font-weight: 400;
+        border-bottom: 1px solid var(--line);
+      }
+      .dz__more thead th {
+        color: var(--muted);
+        font-size: 12.5px;
+      }
+      .dz__more td {
+        text-align: right;
+        font-weight: 600;
+      }
+
+      /* The lists: one at a time, under tabs */
+      .lists {
+        margin-top: 36px;
+      }
+      .tabs {
+        display: flex;
+        gap: 4px;
+        border-bottom: 1px solid var(--line);
+      }
+      .tab {
+        position: relative;
+        padding: 11px 14px 12px;
+        border: 0;
+        border-radius: 8px 8px 0 0;
+        background: transparent;
+        font-weight: 600;
+        font-size: 15px;
+        color: var(--text-2);
+        white-space: nowrap;
+      }
+      .tab:hover {
+        color: var(--text);
+        background: var(--surface-2);
+      }
+      .tab[aria-selected='true'] {
+        color: var(--text);
+      }
+      .tab[aria-selected='true']::after {
+        content: '';
+        position: absolute;
+        left: 10px;
+        right: 10px;
+        bottom: -1px;
+        height: 3px;
+        border-radius: 3px 3px 0 0;
+        background: var(--gold);
+      }
+      /* (four names do not fit one line of a phone: two by two, each its own box) */
+      @media (max-width: 600px) {
+        .tabs {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+          border-bottom: 0;
+        }
+        .tab {
+          padding: 10px 8px;
+          border: 1px solid var(--line-strong);
+          border-radius: 10px;
+          font-size: 14.5px;
+        }
+        .tab[aria-selected='true'] {
+          border-color: var(--gold);
+          background: var(--surface-2);
+          box-shadow: inset 0 0 0 1px var(--gold);
+        }
+        .tab[aria-selected='true']::after {
+          content: none;
+        }
+      }
+      .panel {
+        padding-top: 16px;
+      }
+      .panel:focus {
+        outline: none;
+      }
+      .intro {
+        color: var(--text-2);
+        max-width: 72ch;
+      }
+
+      /* Small labels on a row: a subject, "possible buyer", "couldn't answer" */
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 2px 9px;
+        border: 1px solid var(--line-strong);
+        border-radius: 999px;
+        font-size: 12.5px;
+        font-weight: 500;
+        line-height: 1.5;
+        color: var(--text-2);
+        white-space: nowrap;
+      }
+      .chip svg {
+        width: 12px;
+        height: 12px;
+        flex: none;
+      }
+      .chip--lead {
+        border-color: var(--gold);
+        color: var(--text);
+      }
+      .chip--lead svg {
+        color: var(--gold);
+      }
+      .chip--un,
+      .chip--err {
+        border-color: var(--warn);
+        color: var(--text);
+      }
+      .chip--un svg,
+      .chip--err svg {
+        color: var(--warn);
+      }
+      .chip--none {
+        border-style: dashed;
+        color: var(--muted);
+      }
+      .chip--count {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      /* "İhtiyaçlar": the needs, one sentence each, under their subject */
+      .needs {
+        margin-top: 16px;
+        display: grid;
+        gap: 16px;
+        align-items: start;
+      }
+      .needs__col {
+        display: contents;
+      }
+      @media (min-width: 860px) {
+        .needs {
+          grid-template-columns: 1fr 1fr;
+        }
+        .needs__col {
+          display: grid;
+          gap: 16px;
+          min-width: 0;
+        }
+      }
+      .group {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--surface);
+        overflow: hidden;
+      }
+      /* (on a phone the count goes under the subject's name rather than squeezing it) */
+      .group__head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 2px 12px;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      .group__head h3 {
+        font: 600 15px/1.3 var(--sans);
+      }
+      .group__head span {
+        color: var(--muted);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      .need {
+        display: block;
+        width: 100%;
+        padding: 11px 16px;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+        background: transparent;
+        text-align: left;
+      }
+      .group li:last-child .need {
+        border-bottom: 0;
+      }
+      .need:hover {
+        background: var(--surface-2);
+      }
+      .need__text {
+        display: block;
+        font-size: 15.5px;
+        line-height: 1.4;
+      }
+      .need__meta {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 4px 10px;
+        margin-top: 5px;
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .group__more {
+        width: 100%;
+        padding: 10px 16px;
+        border: 0;
+        border-top: 1px solid var(--line);
+        background: transparent;
+        color: var(--gold);
+        font-weight: 600;
+        font-size: 13.5px;
+        text-align: left;
+      }
+      .group__more:hover {
+        background: var(--surface-2);
+      }
+
+      /* The rows of a list: a question, or a conversation */
+      .rows {
+        margin-top: 14px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--surface);
+        overflow: hidden;
+      }
+      .rows:empty {
+        display: none;
+      }
+      .row {
+        display: grid;
+        gap: 6px;
+        width: 100%;
+        padding: 13px 16px;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+        background: transparent;
+        text-align: left;
+      }
+      .rows li:last-child .row {
+        border-bottom: 0;
+      }
+      .row:hover {
+        background: var(--surface-2);
+      }
+      .row__meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px 8px;
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .row__meta time + span::before {
+        content: '·';
+        margin-right: 8px;
+      }
+      .row__meta time {
+        color: var(--text-2);
+        font-weight: 500;
+      }
+      .row__main {
+        display: grid;
+        gap: 6px;
+        min-width: 0;
+      }
+      .row__q {
+        font-size: 15.5px;
+        font-weight: 500;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        overflow: hidden;
+        overflow-wrap: anywhere;
+      }
+      .row__need {
+        color: var(--text-2);
+        overflow-wrap: anywhere;
+      }
+      .row__need b {
+        font-weight: 600;
+        font-size: 12.5px;
+        color: var(--muted);
+        margin-right: 6px;
+      }
+      @media (min-width: 860px) {
+        .row {
+          grid-template-columns: 190px 1fr;
+          gap: 16px;
+        }
+        .row__meta {
+          flex-direction: column;
+          gap: 1px;
+        }
+        .row__meta time + span::before {
+          content: none;
+        }
+      }
+      .more {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px 16px;
+        margin-top: 12px;
+      }
+      .count {
+        margin-top: 12px;
+        color: var(--text-2);
+        font-size: 14px;
+      }
+      .count b {
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      /* The search and filters of "Sorular": in one row on a computer, folded on a phone */
+      .query {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+        margin-top: 14px;
+      }
+      .query label,
+      .filters label {
+        display: grid;
+        gap: 4px;
+        min-width: 0;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--text-2);
+      }
+      .query label {
+        flex: 1;
+      }
+      .filters select,
+      .query input {
+        width: 100%;
+        min-height: 42px;
+        padding: 8px 10px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: var(--surface);
+        font-size: 15px;
+        font-weight: 400;
+        color: var(--text);
+      }
+      .filters__toggle {
+        flex: none;
+        min-height: 42px;
+      }
+      .filters {
+        display: none;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .filters.is-open {
+        display: grid;
+      }
+      .checks {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 22px;
+        align-items: center;
+      }
+      .checks label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text);
+        min-height: 32px;
+      }
+      .checks input {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--gold);
+        margin: 0;
+      }
+      @media (min-width: 760px) {
+        .filters__toggle {
+          display: none;
+        }
+        .filters {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+        }
+      }
+      /* (wide enough, the search and the four boxes make one row, the two ticks the next) */
+      @media (min-width: 1000px) {
+        .search-form {
+          display: grid;
+          grid-template-columns: minmax(0, 1.6fr) repeat(4, minmax(0, 1fr));
+          gap: 10px;
+          align-items: end;
+          margin-top: 14px;
+        }
+        .search-form .query {
+          margin-top: 0;
+        }
+        .search-form .filters {
+          display: contents;
+        }
+      }
+      .tools {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px 14px;
+        margin-top: 12px;
+      }
+      .tools .count {
+        flex: 1 1 260px;
+        margin-top: 0;
+      }
+
+      .foot {
+        margin-top: 40px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12.5px;
+      }
+
+      /* One question opened (the question, the answer, the rest of that conversation), or one
+         conversation (every question in it, the first at the top) */
+      dialog {
+        width: min(720px, calc(100% - 20px));
+        max-height: calc(100dvh - 20px);
+        padding: 0;
+        border: 1px solid var(--line-strong);
+        border-radius: 14px;
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      dialog[open] {
+        display: flex;
+        flex-direction: column;
+      }
+      dialog::backdrop {
+        background: rgba(0, 0, 0, 0.62);
+      }
+      html:has(dialog[open]) {
+        overflow: hidden;
+      }
+      .d__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 12px 12px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+      .d__head h2 {
+        font: 600 24px/1.15 var(--serif);
+      }
+      .d__body {
+        padding: 16px 18px 20px;
+        overflow-y: auto;
+        display: grid;
+        gap: 14px;
+        overscroll-behavior: contain;
+      }
+      .d__foot {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+        border-top: 1px solid var(--line);
+      }
+      .d__meta {
+        color: var(--text-2);
+        font-size: 13.5px;
+      }
+      .d__label {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--muted);
+        margin-bottom: 3px;
+      }
+      .d__text {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      .d__q {
+        font-size: 17px;
+        font-weight: 500;
+        line-height: 1.4;
+      }
+      .d__need {
+        padding: 10px 12px;
+        border-left: 3px solid var(--bar);
+        background: var(--surface-2);
+        border-radius: 0 8px 8px 0;
+      }
+      .d__facts {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 4px 14px;
+        font-size: 14px;
+      }
+      .d__facts dt {
+        color: var(--muted);
+      }
+      .d__rest {
+        border-top: 1px solid var(--line);
+        padding-top: 14px;
+        display: grid;
+        gap: 12px;
+      }
+      .d__rest h3 {
+        font: 600 15px/1.3 var(--sans);
+      }
+      .d__turns {
+        display: grid;
+        gap: 12px;
+      }
+      .turn {
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        display: grid;
+        gap: 6px;
+      }
+      .turn__meta {
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .turn__q {
+        font-weight: 500;
+      }
+      .turn__need {
+        padding: 6px 10px;
+        border-left: 3px solid var(--bar);
+        background: var(--surface-2);
+        border-radius: 0 6px 6px 0;
+        font-size: 14px;
+      }
+      .turn__need b {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--muted);
+      }
+      .turn__a {
+        color: var(--text-2);
+      }
+      .turn .linklike {
+        justify-self: start;
+      }
+      #confirm {
+        width: min(440px, calc(100% - 32px));
+      }
+      #confirm .d__body {
+        padding-top: 20px;
+      }
+      #confirm .d__foot {
+        justify-content: flex-end;
+      }
+      #confirm-text {
+        font-size: 16px;
+      }
+
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: calc(18px + env(safe-area-inset-bottom));
+        transform: translateX(-50%);
+        max-width: calc(100% - 32px);
+        padding: 10px 16px;
+        border: 1px solid var(--line-strong);
+        border-radius: 10px;
+        background: var(--surface-2);
+        box-shadow: var(--shadow);
+        font-weight: 500;
+        z-index: 20;
+      }
+      .noscript {
+        padding: 24px 16px;
+      }
+
+      /* Where the system swaps colours for the reader, the single-series marks take the
+         system's own ink; the donuts and the split keep their colours, named in their legends */
+      @media (forced-colors: active) {
+        .bar__track i,
+        .dz__cols i {
+          background: CanvasText;
+          forced-color-adjust: none;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        .is-busy .live,
+        .slice,
+        .legend__go {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <noscript><p class="noscript">Bu sayfanın çalışması için tarayıcınızda JavaScript açık olmalıdır.</p></noscript>
+
+    <main id="login" class="login" hidden>
+      <form id="login-form" class="login__card">
+        <p class="brand">MENKUR <span>TARIM</span></p>
+        <h1>Sohbet paneli</h1>
+        <p class="login__lead">Ziyaretçilerin sitedeki asistana sorduğu soruları görmek için panel şifresini girin.</p>
+        <label for="pw">Şifre</label>
+        <input id="pw" class="field" type="password" autocomplete="current-password" required />
+        <p id="login-msg" class="msg" role="alert" hidden></p>
+        <button id="login-btn" class="btn btn--primary" type="submit">Giriş yap</button>
+        <p class="login__note">Şifre yalnızca bu sekme açık kaldığı sürece hatırlanır.</p>
+      </form>
+    </main>
+
+    <div id="app" hidden>
+      <header class="top">
+        <div class="top__in">
+          <h1 class="brand">MENKUR <span>TARIM</span> <small>Sohbet paneli</small></h1>
+          <fieldset class="seg" id="period">
+            <legend class="sr">Dönem</legend>
+            <label><input type="radio" name="days" value="7" /><span>7 gün</span></label>
+            <label><input type="radio" name="days" value="30" checked /><span>30 gün</span></label>
+            <label><input type="radio" name="days" value="90" /><span>90 gün</span></label>
+            <label><input type="radio" name="days" value="365" /><span>1 yıl</span></label>
+          </fieldset>
+          <div class="top__acts">
+            <button id="reload" class="btn" type="button">Yenile</button>
+            <button id="logout" class="btn" type="button">Çıkış</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="page" id="page">
+        <div id="fault" class="fault" role="alert" hidden></div>
+        <div id="banner" class="banner" role="alert" hidden>
+          <span id="banner-text"></span>
+          <button id="banner-retry" class="btn" type="button">Tekrar dene</button>
+        </div>
+
+        <section aria-label="Özet">
+          <p id="range" class="range live"></p>
+          <div id="tiles" class="tiles live"></div>
+          <p id="errors-note" class="hint" hidden></p>
+          <div id="unclassified" class="notice" hidden>
+            <p class="notice__text">
+              <span id="unclassified-text" hidden></span>
+              <span id="given-up-text" hidden></span>
+            </p>
+            <button id="classify" class="btn" type="button" hidden>Şimdi sınıflandır</button>
+          </div>
+        </section>
+
+        <section id="charts" class="charts" aria-label="Grafikler">
+          <p id="charts-empty" class="card empty live" hidden>Bu dönemde soru yok.</p>
+          <div id="chart-cards" class="charts__cards">
+            <div class="card">
+              <h2 class="card__title">Konular</h2>
+              <p class="card__sub">Bir konuya dokunun: o konudaki sorular aşağıda listelenir.</p>
+              <div id="cats" class="card__body live"></div>
+            </div>
+            <div class="trio">
+              <div class="card card--donut">
+                <h2 class="card__title">Kim yazıyor?</h2>
+                <div id="customers" class="donut live"></div>
+              </div>
+              <div class="card card--donut">
+                <h2 class="card__title">Ne için yazıyorlar?</h2>
+                <div id="intents" class="donut live"></div>
+              </div>
+              <div class="card card--donut">
+                <h2 class="card__title">Hangi dilde yazıyorlar?</h2>
+                <div id="langs" class="donut live"></div>
+                <p class="hint">Sorunun yazıldığı dil. Sınıflandırılmamış sorularda bunun yerine sitenin açık olduğu dil sayılır.</p>
+              </div>
+            </div>
+            <div class="card where">
+              <div class="where__part">
+                <h2 class="card__title">Hangi cihazdan yazıyorlar?</h2>
+                <div id="devices" class="card__body live"></div>
+              </div>
+              <div class="where__part">
+                <h2 class="card__title">Hangi ülkeden yazıyorlar?</h2>
+                <div id="countries" class="card__body live"></div>
+              </div>
+            </div>
+            <div class="card">
+              <h2 class="card__title">Günlere göre soru sayısı</h2>
+              <figure id="daily" class="live"></figure>
+            </div>
+          </div>
+        </section>
+
+        <section id="lists" class="lists" aria-label="Listeler">
+          <div class="tabs" role="tablist" aria-label="Listeler">
+            <button id="tab-all" class="tab" type="button" role="tab" aria-selected="true" aria-controls="panel-all">Sorular</button>
+            <button id="tab-sessions" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-sessions" tabindex="-1">Konuşmalar</button>
+            <button id="tab-needs" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-needs" tabindex="-1">İhtiyaçlar</button>
+            <button id="tab-unans" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-unans" tabindex="-1">Cevaplanamayanlar</button>
+          </div>
+
+          <div id="panel-all" class="panel" role="tabpanel" aria-labelledby="tab-all">
+            <p class="intro">Bir soruya dokunduğunuzda sorunun tamamı, asistanın cevabı ve aynı konuşmadaki diğer sorular açılır.</p>
+            <form id="filters-form" class="search-form" role="search">
+              <div class="query">
+                <label>Arama (soru ya da ihtiyaç içinde)
+                  <input id="f-q" type="search" placeholder="Örnek: fiyat, 25 kg, Almanya" autocomplete="off" />
+                </label>
+                <button id="f-toggle" class="btn filters__toggle" type="button" aria-expanded="false" aria-controls="filters">Filtreler</button>
+              </div>
+              <div id="filters" class="filters">
+                <label>Konu <select id="f-category"></select></label>
+                <label>Ne için yazmış <select id="f-intent"></select></label>
+                <label>Kim yazmış <select id="f-customer"></select></label>
+                <label>Dil <select id="f-lang"></select></label>
+                <div class="checks">
+                  <label><input id="f-lead" type="checkbox" />Yalnızca potansiyel müşteri soruları</label>
+                  <label><input id="f-unanswered" type="checkbox" />Yalnızca cevaplanamayanlar</label>
+                </div>
+              </div>
+            </form>
+            <div class="tools">
+              <p class="count live"><span id="all-count"></span> <button id="f-clear" class="linklike" type="button" hidden>Filtreleri temizle</button></p>
+              <button id="csv" class="btn" type="button">Listeyi indir (Excel / CSV)</button>
+            </div>
+            <p id="all-empty" class="empty live">Yükleniyor…</p>
+            <ul id="all" class="rows live"></ul>
+            <div id="all-more" class="more"></div>
+          </div>
+
+          <div id="panel-sessions" class="panel" role="tabpanel" aria-labelledby="tab-sessions" hidden>
+            <p class="intro">Her satır bir ziyaretçinin bir sohbetidir; en son yazılan en üstte. Dokunduğunuzda o sohbetin bütün soruları ve cevapları sırasıyla açılır.</p>
+            <p id="sessions-count" class="count live"></p>
+            <p id="sessions-empty" class="empty live">Yükleniyor…</p>
+            <ul id="sessions" class="rows live"></ul>
+            <div id="sessions-more" class="more"></div>
+          </div>
+
+          <div id="panel-needs" class="panel" role="tabpanel" aria-labelledby="tab-needs" hidden>
+            <p class="intro">Her sorunun arkasındaki ihtiyaç, tek cümleyle. Konulara göre gruplanmıştır; her grupta en yeni en üsttedir.</p>
+            <p id="needs-note" class="hint" hidden></p>
+            <div id="needs" class="needs live"><p class="empty">Yükleniyor…</p></div>
+            <div id="needs-more" class="more"></div>
+          </div>
+
+          <div id="panel-unans" class="panel" role="tabpanel" aria-labelledby="tab-unans" hidden>
+            <p class="intro">Asistanın cevaplayamadığı sorular: sitede bilgisi bulunmayan konular, konu dışı istekler ve teknik bir hata yüzünden cevapsız kalanlar. Fiyat, teklif ve sipariş sorularını asistan bilerek telefona ve e-postaya yönlendirir; bunlar burada değil, potansiyel müşteri soruları arasında sayılır.</p>
+            <p id="unans-count" class="count live"></p>
+            <p id="unans-empty" class="empty live">Yükleniyor…</p>
+            <ul id="unans" class="rows live"></ul>
+            <div id="unans-more" class="more"></div>
+          </div>
+        </section>
+
+        <p class="foot">Sorular bir yıl saklanır, sonra kendiliğinden silinir.</p>
+      </main>
+    </div>
+
+    <dialog id="detail" aria-labelledby="detail-title">
+      <div class="d__head">
+        <h2 id="detail-title">Soru</h2>
+        <button id="detail-close" class="btn" type="button">Kapat</button>
+      </div>
+      <div id="detail-body" class="d__body"></div>
+      <div class="d__foot">
+        <button id="del-one" class="btn btn--danger" type="button">Bu soruyu sil</button>
+        <button id="del-session" class="btn btn--danger" type="button">Konuşmanın tamamını sil</button>
+      </div>
+    </dialog>
+
+    <dialog id="confirm" aria-labelledby="confirm-text">
+      <div class="d__body"><p id="confirm-text"></p></div>
+      <div class="d__foot">
+        <button id="confirm-no" class="btn" type="button">Vazgeç</button>
+        <button id="confirm-yes" class="btn btn--danger-solid" type="button">Evet, sil</button>
+      </div>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" hidden></div>
+
+    <script>
+      (() => {
+        'use strict';
+
+        // Shown inside another page (a frame), this one does nothing at all: it has a password
+        // box and buttons that delete, and a page laid over it could steer the owner's taps.
+        if (window.top !== window.self) {
+          document.body.replaceChildren(Object.assign(document.createElement('p'), { className: 'noscript', textContent: 'Bu sayfa başka bir sayfanın içinde açılamaz.' }));
+          return;
+        }
+
+        // Where the API is. Beside the page, except on the GitHub Pages copy, which is files
+        // only and so asks the Cloudflare one on the site's domain (not on the project's
+        // pages.dev address, which some Turkish providers block; the page's policy above lets
+        // it reach that domain and no other). A `?api=` address is listened to only when the
+        // page itself is open on this computer (for testing): anywhere else it is ignored, or
+        // a link made by someone else could send the password the owner types to their server.
+        const API = (() => {
+          const host = location.hostname;
+          if (host === 'localhost' || host === '127.0.0.1') {
+            const asked = new URLSearchParams(location.search).get('api');
+            if (asked) {
+              try {
+                const url = new URL(asked);
+                if (url.protocol === 'http:' || url.protocol === 'https:') return url.origin;
+              } catch {}
+            }
+            return '';
+          }
+          if (host === 'github.io' || host.endsWith('.github.io')) return 'https://menkurtarim.site';
+          return '';
+        })();
+
+        // The fixed lists of CONTRACT.md, in the order the filters offer them. The summary
+        // brings its own labels and those win; these are there before it arrives.
+        const LABELS = {
+          category: {
+            fiyat: 'Fiyat ve teklif',
+            urun: 'Ürün, boy ve kalite',
+            ambalaj: 'Ambalaj',
+            siparis: 'Sipariş, sevkiyat ve ihracat',
+            saklama: 'Saklama ve tazelik',
+            pisirme: 'Pişirme ve tüketim',
+            besin: 'Besin değeri ve sağlık',
+            firma: 'Firma ve tesis',
+            iletisim: 'İletişim',
+            kiraz: 'Kiraz ve diğer ürünler',
+            site: 'Site, 3D ve AR',
+            diger: 'Diğer / konu dışı',
+          },
+          intent: {
+            bilgi: 'Bilgi alma',
+            'satin-alma': 'Satın alma',
+            'is-birligi': 'İş birliği / tedarik',
+            sikayet: 'Şikâyet / sorun',
+            diger: 'Diğer',
+          },
+          customer: {
+            bireysel: 'Bireysel tüketici',
+            perakende: 'Market / manav / perakende',
+            toptanci: 'Toptancı / dağıtıcı',
+            ithalatci: 'İthalatçı / ihracat alıcısı',
+            sanayi: 'Sanayi / işleme tesisi',
+            bilinmiyor: 'Belli değil',
+          },
+        };
+        for (const kind of Object.keys(LABELS)) LABELS[kind] = Object.assign(Object.create(null), LABELS[kind]);
+        // The colour of each answer in the donuts (1 to 5, `--c1` to `--c5` above; 0 the gray of
+        // "not known" and "other"), the same in every period, so a colour learned once stays
+        // true. An answer the server one day adds takes a colour none of these is using.
+        const HUES = {
+          customer: Object.assign(Object.create(null), { bireysel: 1, perakende: 2, toptanci: 3, ithalatci: 4, sanayi: 5, bilinmiyor: 0 }),
+          intent: Object.assign(Object.create(null), { bilgi: 1, 'satin-alma': 2, 'is-birligi': 3, sikayet: 4, diger: 0 }),
+        };
+        // Languages are whichever visitors write in, more than five colours can tell apart, so
+        // the donut shows the five most used and folds the rest into "Diğer". These five keep a
+        // colour of their own whenever they are among them; any other language takes a colour
+        // that none of these five is using at the time.
+        const LANG_HUES = ['tr', 'en', 'de', 'ru', 'ar'];
+        // A language is the one the visitor wrote in, which can be any (CONTRACT-v2 §7), so the
+        // browser names it in Turkish; the site's own eight are here for a browser that can't.
+        const SITE_LANGS = Object.assign(Object.create(null), {
+          tr: 'Türkçe',
+          en: 'İngilizce',
+          de: 'Almanca',
+          fr: 'Fransızca',
+          es: 'İspanyolca',
+          it: 'İtalyanca',
+          pt: 'Portekizce',
+          ru: 'Rusça',
+        });
+        const MESSAGES = {
+          net: 'Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.',
+          down: 'Sunucu şu anda hizmet veremiyor. Lütfen bir süre sonra tekrar deneyin.',
+          bad: 'Sunucudan beklenmeyen bir yanıt geldi. Lütfen bir süre sonra tekrar deneyin.',
+          // (too many wrong passwords, from this address or from everywhere: the minutes the
+          // server says to wait)
+          wait: (minutes) => 'Çok fazla yanlış şifre denendi. Lütfen ' + minutes + ' dakika sonra tekrar deneyin.',
+        };
+        // What a failure says to the owner (a refused password is said where it happens)
+        const say = (failure) => {
+          const code = failure && failure.code;
+          if (code === 'wait') return MESSAGES.wait(failure.minutes);
+          return typeof MESSAGES[code] === 'string' ? MESSAGES[code] : MESSAGES.bad;
+        };
+        const STORE = 'menkur-panel';
+        // (the list last chosen, for as long as the tab stays open)
+        const TAB_STORE = 'menkur-panel-list';
+        const TABS = ['all', 'sessions', 'needs', 'unans'];
+
+        const $ = (id) => document.getElementById(id);
+
+        // Every element this page makes is made here, and every word in it goes in as a text
+        // node. Nothing a visitor or the assistant wrote is ever parsed as HTML.
+        function el(tag, props, ...kids) {
+          const node = document.createElement(tag);
+          for (const [name, value] of Object.entries(props || {})) {
+            if (value == null || value === false) continue;
+            if (name === 'class') node.className = value;
+            else if (name === 'text') node.textContent = value;
+            else if (name === 'click') node.addEventListener('click', value);
+            else node.setAttribute(name, value === true ? '' : value);
+          }
+          for (const kid of kids) if (kid != null && kid !== false) node.append(kid);
+          return node;
+        }
+        // (the charts' shapes, the same way: attributes set one by one, no markup read)
+        const SVG = 'http://www.w3.org/2000/svg';
+        function shape(tag, attributes) {
+          const node = document.createElementNS(SVG, tag);
+          for (const [name, value] of Object.entries(attributes)) node.setAttribute(name, value);
+          return node;
+        }
+        const ICONS = {
+          star: 'M8 1.4l2 4.2 4.6.6-3.4 3.2.9 4.6L8 11.7 3.9 14l.9-4.6L1.4 6.2 6 5.6z',
+          alert: 'M8 1.6 15 14H1L8 1.6Zm-.8 4.7v4h1.6v-4H7.2Zm0 5.1V13h1.6v-1.6H7.2Z',
+          arrow: 'M1.5 7.2h9.6L7.4 3.5l1.1-1.1L14.1 8l-5.6 5.6-1.1-1.1 3.7-3.7H1.5Z',
+          chevron: 'M5.4 2.6 10.8 8l-5.4 5.4-1.2-1.2L8.4 8 4.2 3.8Z',
+          down: 'M2.6 5.4 8 10.8l5.4-5.4-1.2-1.2L8 8.4 3.8 4.2Z',
+        };
+        function icon(name, cls) {
+          const svg = shape('svg', { viewBox: '0 0 16 16', 'aria-hidden': 'true', focusable: 'false' });
+          if (cls) svg.setAttribute('class', cls);
+          svg.append(shape('path', { d: ICONS[name], fill: 'currentColor', 'fill-rule': 'evenodd' }));
+          return svg;
+        }
+
+        // Words and numbers as a Turkish reader writes them. Every time is on Türkiye's clock,
+        // whatever the computer showing the page is set to: the server files each question
+        // under its day in Türkiye, and a list that said otherwise would put a question asked
+        // at 01:30 under a different date than the chart counts it on.
+        const ZONE = 'Europe/Istanbul';
+        const number = new Intl.NumberFormat('tr-TR');
+        const percent = (part, whole) => (whole > 0 ? '%' + number.format(Math.round((part / whole) * 100)) : '');
+        const clockTime = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: ZONE };
+        const stampNear = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'short', ...clockTime });
+        const stampFar = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', ...clockTime });
+        const stampDigits = new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', ...clockTime });
+        const dayShort = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+        const dayShortYear = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+        const dayLong = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', weekday: 'long', timeZone: 'UTC' });
+        const dayLongYear = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long', timeZone: 'UTC' });
+        const dayFull = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+        // (a moment as Türkiye's day, month, year, hour and minute, each two digits but the year)
+        function inTurkey(date) {
+          const parts = {};
+          for (const { type, value } of stampDigits.formatToParts(date)) parts[type] = value;
+          return parts;
+        }
+        function when(at) {
+          const date = new Date(at);
+          if (Number.isNaN(date.getTime())) return '';
+          return (inTurkey(date).year === inTurkey(new Date()).year ? stampNear : stampFar).format(date);
+        }
+        // A conversation's time: when it began, and when its latest question came if that was
+        // another minute ("27 Kas 14:05 – 14:21", or the whole date when it was another day)
+        function between(first, last) {
+          const start = when(first);
+          const a = new Date(first);
+          const b = new Date(last);
+          if (!start || Number.isNaN(b.getTime()) || b - a < 60000) return start;
+          const [x, y] = [inTurkey(a), inTurkey(b)];
+          const sameDay = x.year === y.year && x.month === y.month && x.day === y.day;
+          return start + ' – ' + (sameDay ? y.hour + ':' + y.minute : when(last));
+        }
+        // (the summary's days are Türkiye's calendar days, "2026-11-25": read as such, in no time zone)
+        function asDay(day, format) {
+          const date = new Date(day + 'T00:00:00Z');
+          return Number.isNaN(date.getTime()) ? String(day) : format.format(date);
+        }
+        let regions = null;
+        let tongues = null;
+        try {
+          regions = new Intl.DisplayNames(['tr'], { type: 'region' });
+          tongues = new Intl.DisplayNames(['tr'], { type: 'language' });
+        } catch {}
+        function countryName(code) {
+          if (!code || code === '??') return 'Ülke bilinmiyor';
+          try {
+            return (regions && regions.of(code)) || code;
+          } catch {
+            return code;
+          }
+        }
+        function langName(code) {
+          if (!code) return 'Dil bilinmiyor';
+          try {
+            const name = tongues && tongues.of(code);
+            if (name && name !== code) return name;
+          } catch {}
+          return SITE_LANGS[code] || code;
+        }
+        const deviceName = (device) => (device === 'mobile' ? 'Telefon' : device === 'desktop' ? 'Bilgisayar' : '');
+        const labelOf = (kind, key) => (key == null ? '' : LABELS[kind][key] || key);
+
+        // What the page knows
+        let key = '';
+        let days = 30;
+        let summary = null;
+        let epoch = 0;
+        let listTurn = 0;
+        const NO_FILTERS = { category: '', intent: '', customer: '', lang: '', lead: false, unanswered: false, q: '' };
+        const filters = { ...NO_FILTERS };
+        const lists = {
+          all: { items: [], next: null },
+          sessions: { items: [], next: null },
+          needs: { items: [], next: null },
+          unans: { items: [], next: null },
+        };
+        // (what the reader unfolded: a subject of "İhtiyaçlar" by its key, a folded chart by its box)
+        const opened = new Set();
+        // (the OpenAI fault on screen, so that a refresh that finds the same one does not announce it again)
+        let faultShown = '';
+        let tab = 'all';
+        try {
+          if (TABS.includes(sessionStorage.getItem(TAB_STORE))) tab = sessionStorage.getItem(TAB_STORE);
+        } catch {}
+
+        // The password goes out as its UTF-8 bytes: a header can carry nothing above U+00FF,
+        // and a Turkish password may well have an ş or an ı in it.
+        const onWire = (text) => Array.from(new TextEncoder().encode(text), (byte) => String.fromCharCode(byte)).join('');
+
+        class Failure extends Error {
+          constructor(code, minutes) {
+            super(code);
+            this.code = code;
+            this.minutes = minutes;
+          }
+        }
+        async function call(path, method = 'GET') {
+          let response;
+          try {
+            response = await fetch(API + path, {
+              method,
+              headers: { Authorization: 'Bearer ' + onWire(key) },
+              cache: 'no-store',
+              credentials: 'omit',
+              referrerPolicy: 'no-referrer',
+            });
+          } catch {
+            throw new Failure('net');
+          }
+          if (response.status === 401) throw new Failure('auth');
+          if (response.status === 429) {
+            // too many wrong passwords: the server lets none in, the right one neither, for the
+            // seconds of its Retry-After, said here in whole minutes (at least one). Any other
+            // 429 (a proxy's page) is not this.
+            const said = await response.json().catch(() => null);
+            if (!said || !said.error || said.error.code !== 'wait') throw new Failure('bad');
+            const seconds = Number(response.headers.get('Retry-After'));
+            throw new Failure('wait', Math.max(1, Math.ceil((Number.isFinite(seconds) ? seconds : 0) / 60)));
+          }
+          if (response.status === 503) throw new Failure('down');
+          if (!response.ok) throw new Failure('bad');
+          try {
+            return await response.json();
+          } catch {
+            throw new Failure('bad');
+          }
+        }
+        function listPath(kind, before, limit, using = filters, span = days) {
+          const query = new URLSearchParams({ days: String(span) });
+          if (kind === 'sessions') query.set('limit', '50');
+          if (kind === 'needs') query.set('limit', '200');
+          if (kind === 'unans') {
+            query.set('unanswered', '1');
+            query.set('limit', '50');
+          }
+          if (kind === 'all') {
+            for (const name of ['category', 'intent', 'customer', 'lang']) if (using[name]) query.set(name, using[name]);
+            if (using.lead) query.set('lead', '1');
+            if (using.unanswered) query.set('unanswered', '1');
+            if (using.q) query.set('q', using.q);
+            query.set('limit', String(limit || 50));
+          }
+          if (before != null) query.set('before', String(before));
+          return '/api/admin/' + (kind === 'sessions' ? 'sessions' : 'messages') + '?' + query;
+        }
+        const pageOf = (data) => ({ items: Array.isArray(data && data.items) ? data.items : [], next: data && data.next != null ? data.next : null });
+
+        // Leaving takes the visitors' words off the page too, not only the password
+        function blank() {
+          const waiting = () => el('p', { class: 'empty', text: 'Yükleniyor…' });
+          for (const id of ['fault', 'range', 'tiles', 'unclassified-text', 'given-up-text', 'cats', 'customers', 'intents', 'langs', 'devices', 'countries', 'daily', 'needs-note', 'needs-more', 'sessions', 'sessions-more', 'sessions-count', 'unans', 'unans-more', 'unans-count', 'all', 'all-more', 'all-count', 'detail-body']) $(id).replaceChildren();
+          $('cats').append(waiting());
+          $('needs').replaceChildren(waiting());
+          for (const id of ['sessions-empty', 'unans-empty', 'all-empty']) {
+            $(id).textContent = 'Yükleniyor…';
+            $(id).hidden = false;
+          }
+          for (const id of ['fault', 'banner', 'errors-note', 'unclassified', 'classify', 'needs-note', 'toast', 'charts-empty']) $(id).hidden = true;
+          $('chart-cards').hidden = false;
+          faultShown = '';
+          for (const id of ['page', 'panel-all']) $(id).classList.remove('is-busy');
+          $('page').removeAttribute('aria-busy');
+          Object.assign(filters, NO_FILTERS);
+          $('f-q').value = '';
+          opened.clear();
+          fillSelects();
+          syncFilters();
+        }
+
+        // The password screen
+        function remember(value) {
+          try {
+            if (value) sessionStorage.setItem(STORE, value);
+            else sessionStorage.removeItem(STORE);
+          } catch {}
+        }
+        function showLogin(message) {
+          key = '';
+          remember('');
+          epoch++;
+          listTurn++;
+          summary = null;
+          for (const list of Object.values(lists)) Object.assign(list, { items: [], next: null });
+          for (const dialog of [$('confirm'), $('detail')]) if (dialog.open) dialog.close();
+          blank();
+          $('app').hidden = true;
+          $('login').hidden = false;
+          $('login-msg').hidden = !message;
+          $('login-msg').textContent = message || '';
+          $('pw').value = '';
+          $('login-btn').disabled = false;
+          $('login-btn').textContent = 'Giriş yap';
+          $('pw').focus();
+        }
+        function showApp() {
+          $('login').hidden = true;
+          $('app').hidden = false;
+        }
+        $('login-form').addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const typed = $('pw').value.trim();
+          if (!typed) return;
+          const button = $('login-btn');
+          button.disabled = true;
+          button.textContent = 'Kontrol ediliyor…';
+          $('login-msg').hidden = true;
+          key = typed;
+          try {
+            const first = await call('/api/admin/summary?days=' + days);
+            remember(key);
+            showApp();
+            window.scrollTo(0, 0);
+            refresh(first);
+          } catch (failure) {
+            key = '';
+            // (`wait`: too many wrong passwords; the answer says nothing of the one typed)
+            const message = failure.code === 'auth' ? 'Şifre yanlış. Lütfen tekrar deneyin.' : say(failure);
+            $('login-msg').textContent = message;
+            $('login-msg').hidden = false;
+            button.disabled = false;
+            button.textContent = 'Giriş yap';
+            $('pw').select();
+          }
+        });
+        $('logout').addEventListener('click', () => showLogin(''));
+
+        // Anything that goes wrong after the password screen ends here: a refused password
+        // goes back to that screen, the rest is said in a line at the top of the page. Too
+        // many wrong passwords (`wait`, from this address or from everywhere) is said there
+        // too: the password kept may well be the right one, and "Tekrar dene" works once the
+        // minutes have passed. (An answer that comes in after "Çıkış" has nobody to tell.)
+        function failed(failure) {
+          if (!key) return;
+          if (failure && failure.code === 'auth') {
+            showLogin('Şifre kabul edilmedi. Lütfen yeniden girin.');
+            return;
+          }
+          $('banner-text').textContent = say(failure);
+          $('banner').hidden = false;
+        }
+        let toastTimer = 0;
+        function toast(text) {
+          $('toast').textContent = text;
+          $('toast').hidden = false;
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(() => ($('toast').hidden = true), 4200);
+        }
+
+        // Everything the period drives, fetched together. What is on the page stays there,
+        // dimmed, until the new numbers are in.
+        async function refresh(haveSummary) {
+          const mine = ++epoch;
+          const turn = ++listTurn;
+          $('panel-all').classList.remove('is-busy');
+          $('page').classList.add('is-busy');
+          $('page').setAttribute('aria-busy', 'true');
+          const results = await Promise.allSettled([
+            haveSummary ? Promise.resolve(haveSummary) : call('/api/admin/summary?days=' + days),
+            call(listPath('needs')),
+            call(listPath('unans')),
+            call(listPath('all')),
+            call(listPath('sessions')),
+          ]);
+          if (mine !== epoch) return;
+          $('page').classList.remove('is-busy');
+          $('page').removeAttribute('aria-busy');
+          const broken = results.find((result) => result.status === 'rejected');
+          if (broken) {
+            failed(broken.reason);
+            if (broken.reason && broken.reason.code === 'auth') return;
+          } else {
+            $('banner').hidden = true;
+          }
+          const [sum, needs, unans, all, sessions] = results.map((result) => (result.status === 'fulfilled' ? result.value : null));
+          if (sum) {
+            summary = sum;
+            for (const [kind, field] of [['category', 'categories'], ['intent', 'intents'], ['customer', 'customers']]) {
+              for (const entry of sum[field] || []) if (typeof entry.label === 'string' && entry.label) LABELS[kind][entry.key] = entry.label;
+            }
+            renderSummary();
+            fillSelects();
+          }
+          if (needs) lists.needs = pageOf(needs);
+          if (unans) lists.unans = pageOf(unans);
+          if (sessions) lists.sessions = pageOf(sessions);
+          if (needs) renderNeeds();
+          if (unans) renderUnanswered();
+          if (sessions) renderSessions();
+          // (a filter or a search chosen while these were on their way has asked for its own
+          // list since; this one was asked with the filters as they were, and must not replace it)
+          if (all && turn === listTurn) {
+            lists.all = pageOf(all);
+            renderAll();
+          } else if (sum) {
+            renderAll();
+          }
+        }
+
+        // The list of "Sorular" alone, when one of its filters changes
+        async function reloadList() {
+          const mine = ++listTurn;
+          const at = epoch;
+          syncFilters();
+          $('panel-all').classList.add('is-busy');
+          try {
+            const page = await call(listPath('all'));
+            if (mine !== listTurn || at !== epoch) return;
+            lists.all = pageOf(page);
+            renderAll();
+            $('banner').hidden = true;
+          } catch (failure) {
+            if (mine === listTurn && at === epoch) failed(failure);
+          } finally {
+            if (mine === listTurn) $('panel-all').classList.remove('is-busy');
+          }
+        }
+        const RENDER = { all: () => renderAll(), sessions: () => renderSessions(), needs: () => renderNeeds(), unans: () => renderUnanswered() };
+        async function loadMore(kind, button) {
+          const list = lists[kind];
+          const label = button.textContent;
+          const at = epoch;
+          const turn = listTurn;
+          button.disabled = true;
+          button.textContent = 'Yükleniyor…';
+          try {
+            const page = pageOf(await call(listPath(kind, list.next)));
+            if (at !== epoch || (kind === 'all' && turn !== listTurn)) return;
+            // (a conversation is placed by its latest question: one whose latest question was
+            // deleted elsewhere since the page before now sorts further down and comes again,
+            // and stays listed once)
+            const listed = kind === 'sessions' ? new Set(list.items.map((item) => item.session)) : null;
+            list.items.push(...(listed ? page.items.filter((item) => !listed.has(item.session)) : page.items));
+            list.next = page.next;
+            RENDER[kind]();
+          } catch (failure) {
+            failed(failure);
+          } finally {
+            // (a list drawn again has a new button; this one is only still there if nothing was drawn)
+            if (button.isConnected) {
+              button.disabled = false;
+              button.textContent = label;
+            }
+          }
+        }
+        function moreRow(box, kind, label) {
+          const list = lists[kind];
+          box.replaceChildren();
+          if (list.next == null) return;
+          const button = el('button', { class: 'btn', type: 'button', text: label || 'Daha fazla' });
+          button.addEventListener('click', () => loadMore(kind, button));
+          box.append(button);
+        }
+        // How many a list holds, in words. The summary knows the whole number when the list is
+        // one of its counts (`total`); until the list is all on the page, that is said too.
+        function countLine(box, shown, next, total, noun) {
+          box.replaceChildren();
+          if (!shown) return;
+          if (next == null) box.append(el('b', { text: number.format(shown) + ' ' + noun }), '.');
+          else if (total != null && total > shown) box.append(el('b', { text: number.format(total) + ' ' + noun }), ' var; en yeni ' + number.format(shown) + ' tanesi gösteriliyor. Devamı için listenin altındaki “Daha fazla” düğmesini kullanın.');
+          else box.append(number.format(shown) + ' ' + noun + ' gösteriliyor; devamı için listenin altındaki “Daha fazla” düğmesini kullanın.');
+        }
+
+        // OpenAI's refusal, when the newest question of all failed with one (CONTRACT-v2 §6): what
+        // it means and what to do, in the owner's words. It goes away by itself once a question
+        // is answered again. The billing codes are OpenAI's for a prepaid balance used up, for a
+        // spend or usage limit reached (as the server's /api/health knows them) and for a billing
+        // account that is not in order.
+        const BILLING = /^(?:credit_balance_exhausted|insufficient_quota|billing_\w+|(?:\w+_)?(?:spend|usage)_limit_exceeded)$/;
+        function faultText(code) {
+          if (BILLING.test(code)) return 'OpenAI bakiyesi bitmiş görünüyor: asistan şu anda soruları cevaplayamıyor. OpenAI hesabınıza kredi yükleyin (platform.openai.com → Billing).';
+          if (code === 'invalid_api_key') return 'OpenAI anahtarı geçersiz: asistan şu anda soruları cevaplayamıyor. platform.openai.com → API keys bölümünden yeni bir anahtar alıp sitenin ayarlarına (Cloudflare Pages, OPENAI_API_KEY) girin.';
+          if (code === 'model_not_found') return "Seçili yapay zekâ modeli OpenAI'da artık yok: asistan şu anda soruları cevaplayamıyor. Sitenin ayarlarına (Cloudflare Pages, OPENAI_MODEL) güncel bir model adı girin.";
+          return 'Son soruda OpenAI hata verdi (kod: ' + code + '). Asistan o soruyu cevaplayamadı; hata sürerse OpenAI hesabınızı (platform.openai.com) kontrol edin.';
+        }
+        // (the server takes it away only when a visitor's next question is answered, which can be
+        // a while after the owner has put it right: the banner says so, lest that look like failure)
+        function renderFault(fault) {
+          // (a code is OpenAI's word, or the HTTP status when it gave none)
+          const code = fault && (typeof fault.code === 'string' || typeof fault.code === 'number') ? String(fault.code).trim().slice(0, 60) : '';
+          const at = code && fault.at ? when(fault.at) : '';
+          const said = code ? code + '|' + at : '';
+          $('fault').hidden = !said;
+          if (said === faultShown) return;
+          faultShown = said;
+          $('fault').replaceChildren();
+          if (!said) return;
+          const after = 'Bir soru yeniden cevaplandığında bu uyarı kendiliğinden kalkar.';
+          $('fault').append(icon('alert'), el('p', null, faultText(code), el('small', { text: at ? 'Hata zamanı: ' + at + '. ' + after : after })));
+        }
+
+        // The four numbers, the notices under them, and the charts
+        function renderSummary() {
+          const totals = summary.totals || {};
+          const questions = totals.questions || 0;
+          renderFault(summary.fault);
+          $('range').textContent =
+            summary.from && summary.to ? asDay(summary.from, dayFull) + ' – ' + asDay(summary.to, dayFull) : days === 365 ? 'Son bir yıl' : 'Son ' + days + ' gün';
+
+          // (every count here is of questions, but the conversations: one visitor who asks
+          // three times is three questions and one conversation)
+          const tile = (label, value, go, open) =>
+            el('button', { class: 'tile', type: 'button', click: open }, el('span', { class: 'tile__label', text: label }), el('span', { class: 'tile__value', text: number.format(value || 0) }), el('span', { class: 'tile__go' }, el('span', { text: go }), icon('arrow')));
+          $('tiles').replaceChildren(
+            tile('Soru', totals.questions, 'Soruları göster', () => openList('all', {})),
+            tile('Konuşma', totals.sessions, 'Konuşmaları göster', () => openList('sessions')),
+            tile('Potansiyel müşteri sorusu', totals.leads, 'Bu soruları göster', () => openList('all', { lead: true })),
+            tile('Cevaplanamayan soru', totals.unanswered, 'Bu soruları göster', () => openList('unans')),
+          );
+
+          $('errors-note').hidden = !(totals.errors > 0);
+          // (an answer cut off part-way is an error too, with what was written so far kept)
+          $('errors-note').textContent = totals.errors > 0 ? 'Bu dönemde ' + number.format(totals.errors) + ' soruda teknik bir hata oldu; asistanın cevabı yarım kaldı ya da hiç yazılamadı.' : '';
+
+          // The summary counts a question under a subject, a kind of customer and a reason only
+          // once it is classified, so the totals in the middle of "Kim yazıyor?" and "Ne için
+          // yazıyorlar?" leave it out too, and the line says so. Of the rest, the server says how
+          // many it will still try (`waiting`, what the button sends); the others it gave up on
+          // after a few tries, and no button helps those. (A server that does not say counts
+          // them all as waiting.)
+          const classified = (summary.categories || []).reduce((sum, entry) => sum + (entry.count || 0), 0);
+          const unlabelled = Math.max(0, questions - classified);
+          const waiting = Number.isFinite(totals.waiting) ? Math.min(unlabelled, Math.max(0, totals.waiting)) : unlabelled;
+          const stuck = unlabelled - waiting;
+          const leftOut = 'aşağıdaki “Konular”, “Kim yazıyor?” ve “Ne için yazıyorlar?” sayılarına dâhil değildir.';
+          $('unclassified').hidden = unlabelled === 0;
+          $('unclassified-text').hidden = waiting === 0;
+          $('unclassified-text').textContent = waiting ? number.format(waiting) + ' soru henüz sınıflandırılmadı; ' + leftOut : '';
+          $('given-up-text').hidden = stuck === 0;
+          $('given-up-text').textContent = stuck
+            ? number.format(stuck) + ' soru birkaç denemede sınıflandırılamadı ve bir daha denenmeyecek; ' + (waiting ? 'bunlar da o sayılarda yok.' : leftOut)
+            : '';
+          $('classify').hidden = waiting === 0;
+
+          $('charts-empty').hidden = questions > 0;
+          $('charts-empty').textContent = 'Bu dönemde soru yok.' + (days < 365 ? ' Daha uzun bir dönem seçebilirsiniz.' : '');
+          $('chart-cards').hidden = !questions;
+          const ranked = (entries, kind) =>
+            [...(entries || [])].map((entry) => ({ key: entry.key, count: entry.count || 0, label: entry.label || labelOf(kind, entry.key) })).sort((a, b) => b.count - a.count);
+          const cats = ranked(summary.categories, 'category');
+          bars($('cats'), cats.filter((entry) => entry.count > 0), { dim: 'category', wide: true });
+          const silent = cats.filter((entry) => entry.count === 0);
+          if (questions && silent.length) $('cats').append(el('p', { class: 'hint', text: 'Bu dönemde soru gelmeyen konular: ' + silent.map((entry) => entry.label).join(' · ') }));
+          renderChoice('customers', 'customer');
+          renderChoice('intents', 'intent');
+          renderLangs();
+          renderDevices();
+          bars($('countries'), (summary.countries || []).map((entry) => ({ key: entry.key, count: entry.count || 0, label: countryName(entry.key) })).sort((a, b) => b.count - a.count), { fold: 5 });
+          renderDaily(summary.daily || []);
+          syncFilters();
+        }
+
+        // Ranked bars. One series, one colour; the count and its share are written on every
+        // row, so nothing has to be read off the bar's length alone. With `dim`, a row lists
+        // its questions; with `fold`, only the first rows show until the reader asks for all.
+        function bars(box, entries, { dim, wide, fold }) {
+          box.replaceChildren();
+          const having = entries.filter((entry) => entry.count > 0);
+          const folded = fold && having.length > fold + 1 && !opened.has(box.id);
+          const shown = folded ? having.slice(0, fold) : having;
+          const whole = entries.reduce((sum, entry) => sum + entry.count, 0);
+          if (!whole) {
+            box.append(el('p', { class: 'empty', text: 'Bu dönemde soru yok.' }));
+            return;
+          }
+          const longest = Math.max(...entries.map((entry) => entry.count));
+          const list = el('div', { class: 'bars' + (wide ? ' bars--wide' : '') });
+          for (const entry of shown) {
+            const fill = el('i');
+            fill.style.width = (entry.count / longest) * 100 + '%';
+            const kids = [
+              el('span', { class: 'bar__name', text: entry.label }),
+              el('span', { class: 'bar__val' }, number.format(entry.count), el('small', { text: percent(entry.count, whole) })),
+            ];
+            if (dim) {
+              kids.push(icon('chevron', 'bar__go'), el('span', { class: 'bar__track' }, fill));
+              list.append(el('button', { class: 'bar', type: 'button', 'data-dim': dim, 'data-key': entry.key, click: () => openList('all', { [dim]: entry.key }) }, ...kids));
+            } else {
+              kids.push(el('span', { class: 'bar__track' }, fill));
+              list.append(el('div', { class: 'bar' }, ...kids));
+            }
+          }
+          box.append(list);
+          if (fold && having.length > fold + 1) {
+            box.append(
+              el('button', {
+                class: 'linklike',
+                type: 'button',
+                'aria-expanded': String(!folded),
+                text: folded ? 'Tümünü göster (' + number.format(having.length) + ')' : 'Daha az göster',
+                click: () => {
+                  if (folded) opened.add(box.id);
+                  else opened.delete(box.id);
+                  bars(box, entries, { dim, wide, fold });
+                  box.querySelector('.linklike').focus();
+                },
+              }),
+            );
+          }
+        }
+
+        // The customers or the reasons of the period as a donut: every answer of the fixed list
+        // that has questions, the most first, "Belli değil" or "Diğer" last; the answers with
+        // none are named under it.
+        function renderChoice(id, kind) {
+          const field = kind === 'customer' ? 'customers' : 'intents';
+          const entries = (summary[field] || []).map((entry) => ({ key: entry.key, count: entry.count || 0, name: entry.label || labelOf(kind, entry.key) }));
+          const used = new Set(entries.map((entry) => HUES[kind][entry.key]).filter((hue) => hue != null));
+          const spare = [1, 2, 3, 4, 5].filter((hue) => !used.has(hue));
+          const parts = entries.map((entry) => {
+            const hue = HUES[kind][entry.key] ?? (spare.length ? spare.shift() : 0);
+            return { ...entry, hue, open: () => openList('all', { [kind]: entry.key }), hint: 'Soruları görmek için yeniden dokunun.' };
+          });
+          const order = (a, b) => (a.hue === 0) - (b.hue === 0) || b.count - a.count;
+          donut($(id), parts.filter((part) => part.count > 0).sort(order), { dim: kind });
+          const none = parts.filter((part) => part.count === 0);
+          if (none.length && parts.some((part) => part.count > 0)) $(id).append(el('p', { class: 'hint legend__none', text: 'Bu dönemde soru gelmeyen: ' + none.map((part) => part.name).join(' · ') }));
+        }
+
+        // The languages: the five most used, the rest folded into "Diğer", which unfolds into
+        // the full list (each of its languages lists its own questions).
+        function renderLangs() {
+          const all = (summary.langs || [])
+            .filter((entry) => entry && entry.key)
+            .map((entry) => ({ key: String(entry.key), count: entry.count || 0, name: langName(String(entry.key)) }))
+            .filter((entry) => entry.count > 0)
+            .sort((a, b) => b.count - a.count);
+          const top = all.slice(0, 5);
+          const rest = all.slice(top.length);
+          const keys = top.map((entry) => entry.key);
+          const free = [1, 2, 3, 4, 5].filter((hue) => !keys.includes(LANG_HUES[hue - 1]));
+          const parts = top.map((entry) => {
+            const own = LANG_HUES.indexOf(entry.key);
+            return { ...entry, hue: own >= 0 ? own + 1 : free.shift(), open: () => openList('all', { lang: entry.key }), hint: 'Soruları görmek için yeniden dokunun.' };
+          });
+          if (rest.length) {
+            const box = $('langs');
+            const unfolded = opened.has('langs');
+            parts.push({
+              key: '',
+              name: 'Diğer (' + number.format(rest.length) + ' dil)',
+              count: rest.reduce((sum, entry) => sum + entry.count, 0),
+              hue: 0,
+              expanded: unfolded,
+              hint: 'Bütün dilleri görmek için yeniden dokunun.',
+              open: () => {
+                if (unfolded) opened.delete('langs');
+                else opened.add('langs');
+                renderLangs();
+                syncFilters();
+                const again = box.querySelector('[aria-expanded]');
+                if (again) again.focus();
+              },
+              children: unfolded ? rest.map((entry) => ({ ...entry, hue: 0, open: () => openList('all', { lang: entry.key }) })) : [],
+            });
+          }
+          donut($('langs'), parts, { dim: 'lang' });
+        }
+
+        // A donut and its legend. `parts` come in the order they are drawn: each a name, a count,
+        // a colour (`hue`) and what a click on it does (`open`). A part that folds others in
+        // ("Diğer") unfolds them under its own row (`children`).
+        const TAU = Math.PI * 2;
+        const OUTER = 48;
+        const INNER = 33;
+        const onRing = (radius, angle) => [50 + radius * Math.sin(angle), 50 - radius * Math.cos(angle)];
+        function sector(from, to) {
+          const n = (value) => value.toFixed(3);
+          // (a part that is the whole: a ring, two half circles each way, the hole cut out)
+          if (to - from > TAU - 1e-6) {
+            return 'M50 ' + n(50 - OUTER) + 'A' + OUTER + ' ' + OUTER + ' 0 1 1 50 ' + n(50 + OUTER) + 'A' + OUTER + ' ' + OUTER + ' 0 1 1 50 ' + n(50 - OUTER) + 'Z' + 'M50 ' + n(50 - INNER) + 'A' + INNER + ' ' + INNER + ' 0 1 0 50 ' + n(50 + INNER) + 'A' + INNER + ' ' + INNER + ' 0 1 0 50 ' + n(50 - INNER) + 'Z';
+          }
+          const large = to - from > Math.PI ? 1 : 0;
+          const [a, b, c, d] = [onRing(OUTER, from), onRing(OUTER, to), onRing(INNER, to), onRing(INNER, from)];
+          return 'M' + n(a[0]) + ' ' + n(a[1]) + 'A' + OUTER + ' ' + OUTER + ' 0 ' + large + ' 1 ' + n(b[0]) + ' ' + n(b[1]) + 'L' + n(c[0]) + ' ' + n(c[1]) + 'A' + INNER + ' ' + INNER + ' 0 ' + large + ' 0 ' + n(d[0]) + ' ' + n(d[1]) + 'Z';
+        }
+        // (the donut whose tooltip is showing, so that a tap anywhere else hides it)
+        let tipOwner = null;
+        document.addEventListener('pointerdown', (event) => {
+          if (tipOwner && !tipOwner.box.contains(event.target)) tipOwner.hide();
+        });
+        function donut(box, parts, { dim }) {
+          box.replaceChildren();
+          const whole = parts.reduce((sum, part) => sum + part.count, 0);
+          if (!whole) {
+            box.append(el('p', { class: 'empty', text: 'Bu dönemde soru yok.' }));
+            return;
+          }
+          const svg = shape('svg', { viewBox: '0 0 100 100', 'aria-hidden': 'true', focusable: 'false' });
+          const figure = el('div', { class: 'donut__fig' }, svg, el('p', { class: 'donut__total' }, el('b', { text: number.format(whole) }), el('span', { text: 'soru' })));
+          const legend = el('ul', { class: 'legend' });
+          const tip = el('div', { class: 'tip', hidden: true, 'aria-hidden': 'true' });
+          box.append(figure, legend, tip);
+
+          let shown = null;
+          let armed = null;
+          let pointer = 'mouse';
+          const owner = { box, hide: () => hide() };
+          // the part lit, the others dimmed, its row marked, and the tooltip by it: by the
+          // pointer, or (for the keyboard) on the middle of its slice
+          function show(drawn, event) {
+            shown = drawn;
+            tipOwner = owner;
+            svg.classList.add('has-on');
+            for (const other of slices) {
+              other.path.classList.toggle('is-on', other === drawn);
+              other.row.classList.toggle('is-on', other === drawn);
+            }
+            const part = drawn.part;
+            tip.replaceChildren(el('b', { text: number.format(part.count) + ' soru' }), ' · ' + percent(part.count, whole), el('span', { text: part.name }));
+            if (armed === drawn && part.hint) tip.append(el('em', { text: part.hint }));
+            tip.hidden = false;
+            const area = box.getBoundingClientRect();
+            let x;
+            let y;
+            if (event && event.clientX != null) {
+              x = event.clientX - area.left;
+              y = event.clientY - area.top;
+            } else {
+              const fig = figure.getBoundingClientRect();
+              const [px, py] = onRing((OUTER + INNER) / 2, drawn.middle);
+              x = fig.left - area.left + (px / 100) * fig.width;
+              y = fig.top - area.top + (py / 100) * fig.height;
+            }
+            const half = tip.offsetWidth / 2;
+            tip.style.left = Math.max(half, Math.min(box.clientWidth - half, x)) + 'px';
+            tip.style.top = y + 'px';
+          }
+          function hide() {
+            shown = null;
+            armed = null;
+            svg.classList.remove('has-on');
+            for (const drawn of slices) {
+              drawn.path.classList.remove('is-on');
+              drawn.row.classList.remove('is-on');
+            }
+            tip.hidden = true;
+            if (tipOwner === owner) tipOwner = null;
+          }
+          // A click lists the part's questions; a finger's first tap only shows the tooltip
+          // (with what a second tap does), since it has no hover to show it with.
+          function picked(drawn, event) {
+            if (pointer !== 'mouse' && armed !== drawn) {
+              armed = drawn;
+              show(drawn, event);
+              return;
+            }
+            hide();
+            drawn.part.open();
+          }
+
+          const slices = [];
+          let angle = 0;
+          for (const part of parts) {
+            const sweep = (part.count / whole) * TAU;
+            const path = shape('path', { d: sector(angle, angle + sweep), class: 'slice hue-' + part.hue, 'fill-rule': 'evenodd' });
+            const drawn = { part, path, middle: angle + sweep / 2, row: null };
+            angle += sweep;
+            svg.append(path);
+            path.addEventListener('pointerdown', (event) => (pointer = event.pointerType || 'mouse'));
+            path.addEventListener('pointermove', (event) => {
+              if (event.pointerType === 'mouse') show(drawn, event);
+            });
+            path.addEventListener('pointerleave', (event) => {
+              if (event.pointerType === 'mouse') hide();
+            });
+            path.addEventListener('click', (event) => picked(drawn, event));
+
+            const unfolds = Array.isArray(part.children);
+            const row = el(
+              'button',
+              { class: 'legend__row', type: 'button', 'data-dim': unfolds ? null : dim, 'data-key': unfolds ? null : part.key, 'aria-expanded': unfolds ? String(Boolean(part.expanded)) : null },
+              el('i', { class: 'sw hue-' + part.hue }),
+              el('span', { class: 'legend__name', text: part.name }),
+              el('span', { class: 'legend__val' }, number.format(part.count), el('small', { text: percent(part.count, whole) })),
+              icon(unfolds ? 'down' : 'chevron', 'legend__go'),
+            );
+            drawn.row = row;
+            row.addEventListener('mouseenter', () => show(drawn));
+            row.addEventListener('mouseleave', () => hide());
+            row.addEventListener('focus', () => show(drawn));
+            row.addEventListener('blur', () => hide());
+            row.addEventListener('click', () => {
+              hide();
+              part.open();
+            });
+            legend.append(el('li', null, row));
+            for (const child of unfolds ? part.children : []) {
+              legend.append(
+                el(
+                  'li',
+                  null,
+                  el(
+                    'button',
+                    { class: 'legend__row legend__row--sub', type: 'button', 'data-dim': dim, 'data-key': child.key, click: child.open },
+                    el('i', { class: 'sw hue-0' }),
+                    el('span', { class: 'legend__name', text: child.name }),
+                    el('span', { class: 'legend__val' }, number.format(child.count), el('small', { text: percent(child.count, whole) })),
+                    icon('chevron', 'legend__go'),
+                  ),
+                ),
+              );
+            }
+            slices.push(drawn);
+          }
+        }
+
+        // Phone or computer: two parts of one whole, so no donut (a two-slice pie says less than
+        // the two numbers do); the line of shares, then a thin bar split in the same colours.
+        function renderDevices() {
+          const box = $('devices');
+          box.replaceChildren();
+          const NAMES = { mobile: 'Telefon', desktop: 'Bilgisayar' };
+          const HUE = { mobile: 1, desktop: 2 };
+          const seen = (summary.devices || []).filter((entry) => entry && NAMES[entry.key] && entry.count > 0).sort((a, b) => b.count - a.count);
+          const whole = seen.reduce((sum, entry) => sum + entry.count, 0);
+          if (!whole) {
+            box.append(el('p', { class: 'empty', text: 'Bu dönemde soru yok.' }));
+            return;
+          }
+          const line = el('p', { class: 'split__line' });
+          const bar = el('div', { class: 'split', role: 'img', 'aria-label': seen.map((entry) => NAMES[entry.key] + ' ' + percent(entry.count, whole) + ' (' + number.format(entry.count) + ' soru)').join(', ') });
+          for (const entry of seen) {
+            line.append(el('span', null, el('i', { class: 'sw hue-' + HUE[entry.key] }), NAMES[entry.key], el('b', { text: percent(entry.count, whole) }), el('small', { text: '(' + number.format(entry.count) + ' soru)' })));
+            const part = el('i', { class: 'hue-' + HUE[entry.key] });
+            part.style.flex = String(entry.count);
+            bar.append(part);
+          }
+          box.append(line, bar);
+        }
+
+        // Questions per day. The pointer (or the arrow keys) only has to be over a day, not on
+        // its column; the same numbers are in the table under the chart.
+        function renderDaily(daily) {
+          const box = $('daily');
+          box.replaceChildren();
+          const most = daily.reduce((max, entry) => Math.max(max, entry.count || 0), 0);
+          if (!daily.length || !most) {
+            box.append(el('p', { class: 'empty', text: 'Bu dönemde soru yok.' }));
+            return;
+          }
+          const scale = [2, 4, 6, 8, 10, 20, 30, 40, 50, 100, 200, 300, 400, 500, 1000].find((step) => step >= most) || most;
+          const total = daily.reduce((sum, entry) => sum + (entry.count || 0), 0);
+          const peak = daily.reduce((best, entry) => (entry.count > best.count ? entry : best), daily[0]);
+          // (a period that crosses New Year has two of every date in it, so its dates carry the year)
+          const twoYears = String(daily[0].day).slice(0, 4) !== String(daily[daily.length - 1].day).slice(0, 4);
+          const dayLabel = twoYears ? dayLongYear : dayLong;
+          const caption =
+            'En yoğun gün ' + asDay(peak.day, dayLabel) + ': ' + number.format(peak.count) + ' soru. Günde ortalama ' +
+            new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1 }).format(total / daily.length) + ' soru.';
+
+          const plot = el('div', { class: 'dz', tabindex: '0', role: 'group', 'aria-label': 'Günlere göre soru sayısı. ' + caption + ' Ok tuşlarıyla günler arasında gezebilirsiniz.' });
+          for (const value of [scale, scale / 2]) {
+            const rule = el('div', { class: 'dz__grid' }, el('span', { text: number.format(value) }));
+            rule.style.bottom = (value / scale) * 100 + '%';
+            plot.append(rule);
+          }
+          const cols = el('div', { class: 'dz__cols' + (daily.length > 120 ? ' dz__cols--year' : daily.length > 45 ? ' dz__cols--dense' : '') });
+          const slots = daily.map((entry) => {
+            const column = el('i');
+            column.style.height = ((entry.count || 0) / scale) * 100 + '%';
+            const slot = el('span', null, entry.count > 0 ? column : null);
+            cols.append(slot);
+            return slot;
+          });
+          const tip = el('div', { class: 'dz__tip', hidden: true });
+          plot.append(cols, tip);
+
+          let on = -1;
+          const show = (index) => {
+            if (on >= 0) slots[on].classList.remove('is-on');
+            on = index;
+            if (index < 0) {
+              tip.hidden = true;
+              return;
+            }
+            slots[index].classList.add('is-on');
+            tip.replaceChildren(el('b', { text: number.format(daily[index].count || 0) + ' soru' }), ' · ' + asDay(daily[index].day, dayLabel));
+            tip.hidden = false;
+            const middle = slots[index].offsetLeft + slots[index].offsetWidth / 2;
+            const half = tip.offsetWidth / 2;
+            tip.style.left = Math.max(0, Math.min(plot.clientWidth - tip.offsetWidth, middle - half)) + 'px';
+          };
+          const under = (event) => {
+            const box = cols.getBoundingClientRect();
+            return Math.max(0, Math.min(daily.length - 1, Math.floor(((event.clientX - box.left) / box.width) * daily.length)));
+          };
+          plot.addEventListener('pointermove', (event) => show(under(event)));
+          plot.addEventListener('pointerdown', (event) => show(under(event)));
+          plot.addEventListener('pointerleave', (event) => {
+            if (event.pointerType === 'mouse') show(-1);
+          });
+          plot.addEventListener('blur', () => show(-1));
+          plot.addEventListener('keydown', (event) => {
+            if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+            event.preventDefault();
+            const from = on < 0 ? (event.key === 'ArrowLeft' ? daily.length : -1) : on;
+            show(Math.max(0, Math.min(daily.length - 1, from + (event.key === 'ArrowLeft' ? -1 : 1))));
+          });
+
+          const middle = daily[Math.floor((daily.length - 1) / 2)];
+          const axis = el(
+            'div',
+            { class: 'dz__x', 'aria-hidden': 'true' },
+            el('span', { text: asDay(daily[0].day, twoYears ? dayShortYear : dayShort) }),
+            el('span', { text: asDay(middle.day, twoYears ? dayShortYear : dayShort) }),
+            el('span', { text: asDay(daily[daily.length - 1].day, twoYears ? dayShortYear : dayShort) }),
+          );
+          const body = el('tbody');
+          for (const entry of [...daily].reverse()) {
+            if (entry.count > 0) body.append(el('tr', null, el('th', { scope: 'row', text: asDay(entry.day, dayLabel) }), el('td', { text: number.format(entry.count) })));
+          }
+          const table = el(
+            'details',
+            { class: 'dz__more' },
+            el('summary', { text: 'Tablo olarak göster' }),
+            el('table', null, el('thead', null, el('tr', null, el('th', { scope: 'col', text: 'Soru gelen günler' }), el('th', { scope: 'col', text: 'Soru' }))), body),
+          );
+          box.append(plot, axis, el('p', { class: 'hint', text: caption }), table);
+        }
+
+        // The lists under the charts, one at a time. The tabs work as tabs do for the keyboard:
+        // the arrow keys, Home and End move between them; Tab goes on into the list.
+        function showTab(name) {
+          tab = TABS.includes(name) ? name : 'all';
+          for (const each of TABS) {
+            const on = each === tab;
+            $('tab-' + each).setAttribute('aria-selected', String(on));
+            $('tab-' + each).tabIndex = on ? 0 : -1;
+            $('panel-' + each).hidden = !on;
+          }
+          try {
+            sessionStorage.setItem(TAB_STORE, tab);
+          } catch {}
+        }
+        for (const each of TABS) $('tab-' + each).addEventListener('click', () => showTab(each));
+        document.querySelector('.tabs').addEventListener('keydown', (event) => {
+          const at = TABS.indexOf(tab);
+          const to = { ArrowRight: at + 1, ArrowLeft: at - 1, Home: 0, End: TABS.length - 1 }[event.key];
+          if (to === undefined) return;
+          event.preventDefault();
+          showTab(TABS[(to + TABS.length) % TABS.length]);
+          $('tab-' + tab).focus();
+        });
+        // A number or a chart opens the list behind it: its tab chosen, scrolled to (below the
+        // bar at the top) and the keyboard on it. `only`, for "Sorular", is the one filter
+        // that list then has; every other is cleared.
+        function openList(name, only) {
+          if (only) {
+            Object.assign(filters, NO_FILTERS, only);
+            clearTimeout(searchTimer);
+            $('f-q').value = '';
+            reloadList();
+          }
+          showTab(name);
+          $('tab-' + name).focus({ preventScroll: true });
+          const top = document.querySelector('.top');
+          const above = getComputedStyle(top).position === 'sticky' ? top.offsetHeight : 0;
+          window.scrollTo({ top: Math.max(0, $('lists').getBoundingClientRect().top + window.scrollY - above - 12) });
+        }
+
+        // The small labels of a row
+        function chips(row, withCategory, plain) {
+          const box = el('span', { class: 'chips' });
+          if (withCategory) {
+            box.append(row.category ? el('span', { class: 'chip', text: labelOf('category', row.category) }) : el('span', { class: 'chip chip--none', text: 'Sınıflandırılmamış' }));
+          }
+          if (row.lead) box.append(el('span', { class: 'chip chip--lead' }, icon('star'), 'Potansiyel müşteri'));
+          if (row.status === 'error') box.append(el('span', { class: 'chip chip--err' }, icon('alert'), 'Teknik hata'));
+          else if (row.answered === false && !plain) box.append(el('span', { class: 'chip chip--un' }, icon('alert'), 'Cevaplanamadı'));
+          return box;
+        }
+        function rowItem(row, plain) {
+          const meta = el(
+            'span',
+            { class: 'row__meta' },
+            el('time', { datetime: row.at, text: when(row.at) }),
+            el('span', { text: [langName(row.lang), countryName(row.country), deviceName(row.device)].filter(Boolean).join(' · ') }),
+          );
+          const main = el('span', { class: 'row__main' }, chips(row, true, plain), el('span', { class: 'row__q', dir: 'auto', text: row.question || '' }));
+          if (row.need) main.append(el('span', { class: 'row__need' }, el('b', { text: 'İhtiyaç' }), row.need));
+          return el('li', null, el('button', { class: 'row', type: 'button', click: () => openDetail(row) }, meta, main));
+        }
+
+        // "Konuşmalar": one row for each conversation, the one written in last at the top. A
+        // row says when it was, where from and on what, how many questions it holds, whether a
+        // possible buyer wrote, its first question and the first need found in it.
+        function sessionItem(item) {
+          const meta = el(
+            'span',
+            { class: 'row__meta' },
+            el('time', { datetime: item.first_at, text: between(item.first_at, item.last_at) }),
+            el('span', { text: [langName(item.lang), countryName(item.country), deviceName(item.device)].filter(Boolean).join(' · ') }),
+          );
+          const marks = el('span', { class: 'chips' }, el('span', { class: 'chip chip--count', text: number.format(item.questions || 0) + ' soru' }));
+          if (item.leads > 0) marks.append(el('span', { class: 'chip chip--lead' }, icon('star'), 'Potansiyel müşteri'));
+          if (item.unanswered > 0) marks.append(el('span', { class: 'chip chip--un' }, icon('alert'), item.questions > 1 ? number.format(item.unanswered) + ' soru cevaplanamadı' : 'Cevaplanamadı'));
+          const main = el('span', { class: 'row__main' }, marks, el('span', { class: 'row__q', dir: 'auto', text: item.question || '' }));
+          if (item.need) main.append(el('span', { class: 'row__need' }, el('b', { text: 'İhtiyaç' }), item.need));
+          return el('li', null, el('button', { class: 'row', type: 'button', click: () => openConversation(item) }, meta, main));
+        }
+        function renderSessions() {
+          const list = lists.sessions;
+          $('sessions').replaceChildren(...list.items.map(sessionItem));
+          $('sessions-empty').hidden = list.items.length > 0;
+          $('sessions-empty').textContent = 'Bu dönemde konuşma yok.';
+          countLine($('sessions-count'), list.items.length, list.next, summary && summary.totals ? summary.totals.sessions : null, 'konuşma');
+          moreRow($('sessions-more'), 'sessions');
+        }
+
+        // "İhtiyaçlar": the needs under their subject, the busiest subject first, the newest
+        // need first (the API already hands the rows newest first). Only the newest page of the
+        // period is here until the reader asks for more; until then the counts under each
+        // subject are of what is here, not of the whole period, and the line under the heading
+        // says so.
+        function renderNeeds() {
+          const box = $('needs');
+          const list = lists.needs;
+          box.replaceChildren();
+          const partial = list.next != null && list.items.length > 0;
+          $('needs-note').hidden = !partial;
+          $('needs-note').textContent = partial
+            ? 'Burada bu dönemin yalnızca en yeni ' + number.format(list.items.length) + ' sorusu var ve başlıklardaki sayılar bunları sayar. Dönemin tamamı için yukarıdaki “Konular” sayılarına bakın.'
+            : '';
+          const groups = new Map();
+          for (const row of list.items) {
+            if (!row.need) continue;
+            const name = row.category || 'diger';
+            if (!groups.has(name)) groups.set(name, []);
+            groups.get(name).push(row);
+          }
+          if (!list.items.length) {
+            box.append(el('p', { class: 'empty', text: 'Bu dönemde soru yok.' }));
+          } else if (!groups.size) {
+            // (the button is named only while it is there: questions the server gave up on have none)
+            const button = !$('unclassified').hidden && !$('classify').hidden;
+            box.append(el('p', { class: 'empty', text: button ? 'Bu dönemdeki sorular henüz sınıflandırılmadı. Yukarıdaki “Şimdi sınıflandır” düğmesini kullanabilirsiniz.' : 'Bu dönemdeki sorular sınıflandırılmadı.' }));
+          }
+          const ordered = [...groups].sort((a, b) => b[1].length - a[1].length);
+          // Two columns on a wide screen, dealt out so that both end near the same height. On a
+          // phone the columns dissolve (`display: contents`) and `order` puts the groups back
+          // in one line, the busiest first.
+          const columns = [el('div', { class: 'needs__col' }), el('div', { class: 'needs__col' })];
+          const weight = [0, 0];
+          ordered.forEach(([name, rows], rank) => {
+            const side = weight[0] <= weight[1] ? 0 : 1;
+            weight[side] += 1 + Math.min(rows.length, 5);
+            const group = needGroup(name, rows);
+            group.style.order = String(rank);
+            columns[side].append(group);
+          });
+          for (const column of columns) if (column.childElementCount) box.append(column);
+          moreRow($('needs-more'), 'needs', 'Daha eski ihtiyaçları da göster');
+        }
+        function needGroup(name, rows) {
+          const buyers = rows.filter((row) => row.lead).length;
+          const head = el(
+            'div',
+            { class: 'group__head' },
+            el('h3', { text: labelOf('category', name) }),
+            el('span', { text: number.format(rows.length) + ' soru' + (buyers ? ' · potansiyel müşteriden: ' + number.format(buyers) : '') }),
+          );
+          const list = el('ul');
+          const group = el('div', { class: 'group' }, head, list);
+          const draw = () => {
+            const all = opened.has(name);
+            list.replaceChildren();
+            for (const row of all ? rows : rows.slice(0, 5)) {
+              const meta = el('span', { class: 'need__meta' });
+              if (row.lead) meta.append(el('span', { class: 'chip chip--lead' }, icon('star'), 'Potansiyel müşteri'));
+              meta.append(el('span', { text: [when(row.at), row.customer && row.customer !== 'bilinmiyor' ? labelOf('customer', row.customer) : '', countryName(row.country)].filter(Boolean).join(' · ') }));
+              list.append(el('li', null, el('button', { class: 'need', type: 'button', click: () => openDetail(row) }, el('span', { class: 'need__text', text: row.need }), meta)));
+            }
+            const old = group.querySelector('.group__more');
+            if (old) old.remove();
+            if (rows.length > 5) {
+              group.append(
+                el('button', {
+                  class: 'group__more',
+                  type: 'button',
+                  text: all ? 'Daha az göster' : 'Tümünü göster (' + number.format(rows.length) + ')',
+                  click: () => {
+                    if (all) opened.delete(name);
+                    else opened.add(name);
+                    draw();
+                    group.querySelector('.group__more').focus();
+                  },
+                }),
+              );
+            }
+          };
+          draw();
+          return group;
+        }
+
+        function renderUnanswered() {
+          const list = lists.unans;
+          $('unans').replaceChildren(...list.items.map((row) => rowItem(row, true)));
+          $('unans-empty').hidden = list.items.length > 0;
+          $('unans-empty').textContent = 'Bu dönemde cevaplanamayan soru yok.';
+          countLine($('unans-count'), list.items.length, list.next, summary && summary.totals ? summary.totals.unanswered : null, 'soru');
+          moreRow($('unans-more'), 'unans');
+        }
+
+        const filtering = () => Boolean(filters.category || filters.intent || filters.customer || filters.lang || filters.lead || filters.unanswered || filters.q);
+        // How many questions the filters of "Sorular" match, when the summary has counted it:
+        // no filter at all, or one of those it counts, and no search
+        function matching() {
+          if (!summary || !summary.totals || filters.q) return null;
+          const named = ['category', 'intent', 'customer', 'lang'].filter((name) => filters[name]);
+          const ticked = ['lead', 'unanswered'].filter((name) => filters[name]);
+          if (named.length + ticked.length === 0) return summary.totals.questions;
+          if (named.length + ticked.length > 1) return null;
+          if (ticked.length) return ticked[0] === 'lead' ? summary.totals.leads : summary.totals.unanswered;
+          const field = { category: 'categories', intent: 'intents', customer: 'customers', lang: 'langs' }[named[0]];
+          const entry = (summary[field] || []).find((each) => each.key === filters[named[0]]);
+          return entry ? entry.count : null;
+        }
+        function renderAll() {
+          const list = lists.all;
+          $('all').replaceChildren(...list.items.map((row) => rowItem(row)));
+          $('all-empty').hidden = list.items.length > 0;
+          $('all-empty').textContent = filtering() ? 'Bu filtrelere uyan soru yok.' : 'Bu dönemde soru yok.';
+          // what is listed, in words: the filters in force, then how many there are
+          const said = [
+            labelOf('category', filters.category),
+            labelOf('intent', filters.intent),
+            labelOf('customer', filters.customer),
+            filters.lang ? langName(filters.lang) : '',
+            filters.lead ? 'potansiyel müşteri soruları' : '',
+            filters.unanswered ? 'cevaplanamayanlar' : '',
+            filters.q ? '“' + filters.q + '” araması' : '',
+          ].filter(Boolean);
+          const count = el('span');
+          countLine(count, list.items.length, list.next, matching(), 'soru');
+          $('all-count').replaceChildren();
+          if (said.length) $('all-count').append('Seçilen: ', el('b', { text: said.join(', ') }), '. ');
+          $('all-count').append(...count.childNodes);
+          moreRow($('all-more'), 'all');
+        }
+
+        // The filters of "Sorular". A chart's row or a number above sets them too (openList),
+        // and the boxes, the rows and the count always say the same thing.
+        function fillSelects() {
+          const fill = (id, kind, keys, all, name) => {
+            const select = $(id);
+            const now = filters[kind];
+            select.replaceChildren(el('option', { value: '', text: all }));
+            for (const key of keys) select.append(el('option', { value: key, text: name(key) }));
+            if (now && !keys.includes(now)) select.append(el('option', { value: now, text: name(now) }));
+            select.value = now;
+          };
+          for (const [kind, all] of [['category', 'Bütün konular'], ['intent', 'Hepsi'], ['customer', 'Hepsi']]) {
+            fill('f-' + kind, kind, Object.keys(LABELS[kind]), all, (key) => labelOf(kind, key));
+          }
+          // (languages are whichever visitors wrote in, so the summary says which there are,
+          // the most used first, as the chart lists them)
+          const seen = summary ? [...(summary.langs || [])].filter((entry) => entry && entry.key).sort((a, b) => (b.count || 0) - (a.count || 0)) : [];
+          fill('f-lang', 'lang', [...new Set(seen.map((entry) => String(entry.key)))], 'Bütün diller', langName);
+        }
+        function syncFilters() {
+          for (const name of ['category', 'intent', 'customer', 'lang']) $('f-' + name).value = filters[name];
+          $('f-lead').checked = filters.lead;
+          $('f-unanswered').checked = filters.unanswered;
+          $('f-clear').hidden = !filtering();
+          const set = ['category', 'intent', 'customer', 'lang', 'lead', 'unanswered'].filter((name) => filters[name]).length;
+          $('f-toggle').textContent = set ? 'Filtreler (' + number.format(set) + ')' : 'Filtreler';
+          // (a chart's row that stands for the filter of the list below is marked)
+          for (const node of document.querySelectorAll('[data-dim]')) {
+            if (filters[node.dataset.dim] === node.dataset.key) node.setAttribute('aria-current', 'true');
+            else node.removeAttribute('aria-current');
+          }
+        }
+        for (const name of ['category', 'intent', 'customer', 'lang']) {
+          $('f-' + name).addEventListener('change', (event) => {
+            filters[name] = event.target.value;
+            reloadList();
+          });
+        }
+        for (const name of ['lead', 'unanswered']) {
+          $('f-' + name).addEventListener('change', (event) => {
+            filters[name] = event.target.checked;
+            reloadList();
+          });
+        }
+        let searchTimer = 0;
+        $('f-q').addEventListener('input', (event) => {
+          clearTimeout(searchTimer);
+          searchTimer = setTimeout(() => {
+            const typed = event.target.value.trim();
+            if (typed === filters.q) return;
+            filters.q = typed;
+            reloadList();
+          }, 350);
+        });
+        $('filters-form').addEventListener('submit', (event) => event.preventDefault());
+        $('f-clear').addEventListener('click', () => {
+          Object.assign(filters, NO_FILTERS);
+          clearTimeout(searchTimer);
+          $('f-q').value = '';
+          reloadList();
+        });
+        // (on a phone the boxes fold away under one button; a computer shows them in a row)
+        $('f-toggle').addEventListener('click', () => {
+          const open = !$('filters').classList.contains('is-open');
+          $('filters').classList.toggle('is-open', open);
+          $('f-toggle').setAttribute('aria-expanded', String(open));
+        });
+
+        // One question opened, or one conversation. Until the conversation has loaded, how many
+        // questions it holds (`count`) and how many came after this one (`later`) are not known:
+        // 0 and null.
+        let current = null;
+        function block(label, text, cls) {
+          return el('div', null, el('p', { class: 'd__label', text: label }), el('p', { class: 'd__text ' + (cls || ''), dir: 'auto', text }));
+        }
+        function openDetail(row) {
+          current = { kind: 'question', session: row.session, row, count: 0, later: null };
+          const body = $('detail-body');
+          const rest = el('div', { class: 'd__rest' }, el('h3', { text: 'Aynı konuşmadaki diğer sorular' }), el('p', { class: 'd__meta', text: 'Yükleniyor…' }));
+          const facts = el('dl', { class: 'd__facts' });
+          for (const [name, value] of [['Konu', labelOf('category', row.category)], ['Ne için yazmış', labelOf('intent', row.intent)], ['Kim yazmış', labelOf('customer', row.customer)]]) {
+            if (value) facts.append(el('dt', { text: name }), el('dd', { text: value }));
+          }
+          const answer = row.answer || (row.status === 'error' ? 'Teknik bir hata nedeniyle asistan cevap yazamadı.' : 'Cevap kaydedilmemiş.');
+          body.replaceChildren(
+            el('p', { class: 'd__meta', text: [when(row.at), langName(row.lang), countryName(row.country), deviceName(row.device)].filter(Boolean).join(' · ') }),
+            chips(row, !row.category),
+            block('Ziyaretçinin sorusu', row.question || '', 'd__q'),
+            row.need ? el('div', { class: 'd__need' }, el('p', { class: 'd__label', text: 'İhtiyaç' }), el('p', { class: 'd__text', text: row.need })) : null,
+            block(row.status === 'error' && row.answer ? 'Asistanın cevabı (yarım kaldı)' : 'Asistanın cevabı', answer),
+            facts.childElementCount ? facts : null,
+            rest,
+          );
+          $('detail-title').textContent = 'Soru';
+          $('del-one').hidden = false;
+          $('del-session').textContent = 'Konuşmanın tamamını sil';
+          body.scrollTop = 0;
+          if (!$('detail').open) $('detail').showModal();
+          loadSession(row, rest);
+        }
+        async function loadSession(row, rest) {
+          const note = rest.lastElementChild;
+          try {
+            const data = await call('/api/admin/session?id=' + encodeURIComponent(row.session));
+            if (!current || current.row !== row) return;
+            const turns = Array.isArray(data.items) ? data.items : [];
+            const others = turns.filter((turn) => turn.id !== row.id);
+            current.count = Math.max(1, turns.length);
+            current.later = turns.filter((turn) => turn.id > row.id).length;
+            // (a no-break space: on a phone the number stays with its "soru")
+            if (turns.length > 1) $('del-session').textContent = 'Konuşmanın tamamını sil (' + number.format(turns.length) + '\u00a0soru)';
+            if (!others.length) {
+              note.textContent = 'Bu konuşmada başka soru yok.';
+              return;
+            }
+            note.textContent = 'Bu ziyaretçi aynı sohbette ' + number.format(turns.length) + ' soru sordu. Açık olan, ' + number.format(row.turn || turns.findIndex((turn) => turn.id === row.id) + 1) + '. sorudur.';
+            for (const turn of others) {
+              rest.append(
+                el(
+                  'div',
+                  { class: 'turn' },
+                  el('p', { class: 'turn__meta', text: number.format(turn.turn || 0) + '. soru · ' + when(turn.at) }),
+                  el('p', { class: 'd__text turn__q', dir: 'auto', text: turn.question || '' }),
+                  el('p', { class: 'd__text turn__a', dir: 'auto', text: turn.answer || 'Cevap yok.' }),
+                  el('button', { class: 'linklike', type: 'button', text: 'Bu soruyu aç', click: () => openDetail(turn) }),
+                ),
+              );
+            }
+          } catch (failure) {
+            if (failure.code === 'auth') failed(failure);
+            else if (current && current.row === row) note.textContent = 'Konuşmanın geri kalanı yüklenemedi. ' + say(failure);
+          }
+        }
+        // A conversation opened from "Konuşmalar": every question in it, the first at the top,
+        // each with its answer and its need, and the way to any one of them on its own
+        function openConversation(item) {
+          current = { kind: 'conversation', session: item.session, item, count: 0, later: null };
+          const body = $('detail-body');
+          const turns = el('div', { class: 'd__turns' }, el('p', { class: 'd__meta', text: 'Yükleniyor…' }));
+          body.replaceChildren(el('p', { class: 'd__meta', text: [between(item.first_at, item.last_at), langName(item.lang), countryName(item.country), deviceName(item.device)].filter(Boolean).join(' · ') }), turns);
+          $('detail-title').textContent = 'Konuşma';
+          $('del-one').hidden = true;
+          $('del-session').textContent = 'Konuşmanın tamamını sil';
+          body.scrollTop = 0;
+          if (!$('detail').open) $('detail').showModal();
+          loadConversation(item, turns);
+        }
+        async function loadConversation(item, box) {
+          try {
+            const data = await call('/api/admin/session?id=' + encodeURIComponent(item.session));
+            if (!current || current.item !== item) return;
+            const turns = Array.isArray(data.items) ? data.items : [];
+            current.count = turns.length;
+            if (turns.length > 1) $('del-session').textContent = 'Konuşmanın tamamını sil (' + number.format(turns.length) + '\u00a0soru)';
+            if (!turns.length) {
+              box.replaceChildren(el('p', { class: 'd__meta', text: 'Bu konuşma artık yok; silinmiş olabilir.' }));
+              return;
+            }
+            box.replaceChildren(
+              el('p', { class: 'd__meta', text: turns.length > 1 ? 'Bu ziyaretçi aynı sohbette ' + number.format(turns.length) + ' soru sordu; ilk soru en üstte.' : 'Bu sohbette tek soru var.' }),
+              ...turns.map((turn) =>
+                el(
+                  'div',
+                  { class: 'turn' },
+                  el('p', { class: 'turn__meta', text: number.format(turn.turn || 0) + '. soru · ' + when(turn.at) }),
+                  chips(turn, true),
+                  el('p', { class: 'd__text turn__q', dir: 'auto', text: turn.question || '' }),
+                  turn.need ? el('p', { class: 'turn__need' }, el('b', { text: 'İhtiyaç' }), turn.need) : null,
+                  el('div', null, el('p', { class: 'd__label', text: turn.status === 'error' && turn.answer ? 'Asistanın cevabı (yarım kaldı)' : 'Asistanın cevabı' }), el('p', { class: 'd__text turn__a', dir: 'auto', text: turn.answer || (turn.status === 'error' ? 'Teknik bir hata nedeniyle asistan cevap yazamadı.' : 'Cevap yok.') })),
+                  el('button', { class: 'linklike', type: 'button', text: 'Bu soruyu aç', click: () => openDetail(turn) }),
+                ),
+              ),
+            );
+          } catch (failure) {
+            if (failure.code === 'auth') failed(failure);
+            else if (current && current.item === item) box.replaceChildren(el('p', { class: 'd__meta', text: 'Konuşma yüklenemedi. ' + say(failure) }));
+          }
+        }
+        $('detail-close').addEventListener('click', () => $('detail').close());
+        $('detail').addEventListener('click', (event) => {
+          if (event.target === $('detail')) $('detail').close();
+        });
+        $('detail').addEventListener('close', () => (current = null));
+
+        // Deleting: always asked first, in so many words, since there is no way back
+        let answerConfirm = null;
+        function ask(text) {
+          $('confirm-text').textContent = text;
+          $('confirm').showModal();
+          $('confirm-no').focus();
+          return new Promise((resolve) => (answerConfirm = resolve));
+        }
+        $('confirm-yes').addEventListener('click', () => $('confirm').close('yes'));
+        $('confirm-no').addEventListener('click', () => $('confirm').close('no'));
+        $('confirm').addEventListener('close', () => {
+          if (answerConfirm) answerConfirm($('confirm').returnValue === 'yes');
+          answerConfirm = null;
+          $('confirm').returnValue = '';
+        });
+        // A conversation's count is said only once it is known. The questions after this one
+        // were answered and summed up with this one in view, so they may carry what it said:
+        // whoever deletes it at a visitor's request is told to take the whole conversation
+        // (also while it is still loading, since there may be such questions).
+        async function remove(whole) {
+          if (!current) return;
+          const { session, row, count, later } = current;
+          if (!whole && !row) return;
+          const sure = await ask(
+            whole
+              ? 'Bu konuşmadaki bütün sorular ve cevaplar' + (count ? ' (' + number.format(count) + '\u00a0soru)' : '') + ' kalıcı olarak silinecek. Bu işlem geri alınamaz. Silmek istiyor musunuz?'
+              : later === 0
+                ? 'Bu soru ve cevabı kalıcı olarak silinecek. Bu işlem geri alınamaz. Silmek istiyor musunuz?'
+                : 'Bu soru ve cevabı kalıcı olarak silinecek. Bu işlem geri alınamaz. Aynı konuşmadaki sonraki cevaplar ve ihtiyaç cümleleri bu sorudaki bilgileri taşıyor olabilir; bir ziyaretçinin isteğiyle siliyorsanız konuşmanın tamamını silin. Yalnızca bu soruyu silmek istiyor musunuz?',
+          );
+          if (!sure) return;
+          for (const id of ['del-one', 'del-session']) $(id).disabled = true;
+          try {
+            await call('/api/admin/messages?' + (whole ? 'session=' + encodeURIComponent(session) : 'id=' + encodeURIComponent(row.id)), 'DELETE');
+            if ($('detail').open) $('detail').close();
+            toast(whole ? 'Konuşma silindi.' : 'Soru silindi.');
+            refresh();
+          } catch (failure) {
+            if ($('detail').open) $('detail').close();
+            failed(failure);
+            window.scrollTo(0, 0);
+          } finally {
+            for (const id of ['del-one', 'del-session']) $(id).disabled = false;
+          }
+        }
+        $('del-one').addEventListener('click', () => remove(false));
+        $('del-session').addEventListener('click', () => remove(true));
+
+        // Classifying what is still unclassified: the server does up to twenty a call, so the
+        // call is repeated while it says some are left. A call that classifies none while some
+        // are left means the model is not answering, or not with labels; asking again and again
+        // would not help, and in the second case would use up those questions' tries.
+        async function classifyAll() {
+          const button = $('classify');
+          const label = button.textContent;
+          button.disabled = true;
+          let done = 0;
+          let left = 0;
+          try {
+            for (let round = 0; round < 200; round++) {
+              const step = await call('/api/admin/classify', 'POST');
+              if (!key) return;
+              done += step.done || 0;
+              left = step.left || 0;
+              button.textContent = 'Sınıflandırılıyor… ' + number.format(done) + ' tamam, ' + number.format(left) + ' kaldı';
+              if (!(left > 0) || !(step.done > 0)) break;
+            }
+            if (left > 0) toast(number.format(done) + ' soru sınıflandırıldı; ' + number.format(left) + ' soru şu anda sınıflandırılamadı. Daha sonra tekrar deneyin.');
+            else if (done > 0) toast(number.format(done) + ' soru sınıflandırıldı.');
+            // (none classified and none left: those that were waiting have just used up their
+            // last tries, or were classified elsewhere meanwhile; the notice, redrawn below, says which)
+            else toast('Hiçbir soru sınıflandırılamadı; bekleyen soru kalmadı.');
+            // (the notice above is redrawn from the server's numbers whatever came of it: a
+            // question that failed for a reason of its own may have used up its tries meanwhile)
+            refresh();
+          } catch (failure) {
+            failed(failure);
+            if (done > 0 && key) refresh();
+          } finally {
+            button.disabled = false;
+            button.textContent = label;
+          }
+        }
+        $('classify').addEventListener('click', classifyAll);
+
+        // The list as a file for Excel: every row the filters match, not only the ones on
+        // screen, dated on Türkiye's clock as the page is. Semicolons and a byte-order mark, as
+        // Turkish Excel expects; a cell that begins like a formula gets an apostrophe in front
+        // so that Excel shows it and does not run it (these are strangers' words).
+        const cell = (value) => {
+          let text = value == null ? '' : String(value);
+          if (/^[=+\-@\t\r]/.test(text)) text = "'" + text;
+          return '"' + text.replace(/"/g, '""') + '"';
+        };
+        function csvOf(rows) {
+          const yesNo = (value) => (value === true ? 'Evet' : value === false ? 'Hayır' : '');
+          const lines = [['Tarih', 'Saat', 'Dil', 'Ülke', 'Cihaz', 'Konu', 'Ne için yazmış', 'Kim yazmış', 'Potansiyel müşteri', 'Cevaplandı', 'Soru', 'İhtiyaç', 'Cevap', 'Konuşma', 'Sıra', 'No']];
+          for (const row of rows) {
+            const date = new Date(row.at);
+            const at = Number.isNaN(date.getTime()) ? null : inTurkey(date);
+            lines.push([
+              at ? at.day + '.' + at.month + '.' + at.year : '',
+              at ? at.hour + ':' + at.minute : '',
+              langName(row.lang),
+              countryName(row.country),
+              deviceName(row.device),
+              labelOf('category', row.category),
+              labelOf('intent', row.intent),
+              labelOf('customer', row.customer),
+              yesNo(row.lead),
+              row.status === 'error' ? 'Teknik hata' : yesNo(row.answered),
+              row.question,
+              row.need,
+              row.answer,
+              row.session,
+              row.turn,
+              row.id,
+            ]);
+          }
+          return '\uFEFF' + lines.map((line) => line.map(cell).join(';')).join('\r\n') + '\r\n';
+        }
+        async function downloadCsv() {
+          const button = $('csv');
+          const label = button.textContent;
+          button.disabled = true;
+          button.textContent = 'Hazırlanıyor…';
+          try {
+            const rows = [];
+            const asked = { ...filters };
+            const span = days;
+            let before = null;
+            do {
+              const page = pageOf(await call(listPath('all', before, 200, asked, span)));
+              rows.push(...page.items);
+              before = page.items.length ? page.next : null;
+            } while (before != null && rows.length < 50000);
+            if (!rows.length) {
+              toast('İndirilecek soru yok.');
+              return;
+            }
+            const today = inTurkey(new Date());
+            const link = el('a', { href: URL.createObjectURL(new Blob([csvOf(rows)], { type: 'text/csv;charset=utf-8' })), download: 'menkur-sorular-' + today.year + '-' + today.month + '-' + today.day + '.csv' });
+            document.body.append(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(link.href), 60000);
+            toast(number.format(rows.length) + ' soru indirildi.');
+          } catch (failure) {
+            failed(failure);
+          } finally {
+            button.disabled = false;
+            button.textContent = label;
+          }
+        }
+        $('csv').addEventListener('click', downloadCsv);
+
+        $('period').addEventListener('change', (event) => {
+          days = Number(event.target.value) || 30;
+          opened.clear();
+          refresh();
+        });
+        $('reload').addEventListener('click', () => refresh());
+        $('banner-retry').addEventListener('click', () => refresh());
+
+        // A password kept from earlier in this tab goes straight to the numbers, on the list
+        // chosen last; if the server no longer takes it, `failed` brings the password screen back.
+        fillSelects();
+        showTab(tab);
+        try {
+          key = sessionStorage.getItem(STORE) || '';
+        } catch {}
+        if (key) {
+          showApp();
+          refresh();
+        } else {
+          showLogin('');
+        }
+      })();
+    </script>
+  </body>
+</html>
